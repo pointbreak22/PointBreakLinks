@@ -54,6 +54,9 @@ jobs:
       - name: Type-check
         run: npx tsc --noEmit
 
+      - name: Lint
+        run: npx ng lint
+
       # @angular/build:unit-test runs on Vitest (jsdom), not Karma/Chrome — no browser needed.
       - name: Unit tests
         run: npx ng test --watch=false

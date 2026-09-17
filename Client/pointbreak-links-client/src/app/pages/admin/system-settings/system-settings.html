@@ -29,28 +29,28 @@
         <h3>Аутентификация и доступ</h3>
         <div class="settings-row">
           <div class="setting-item">
-            <label>Требовать подтверждение email</label>
+            <label for="require-email-confirmation">Требовать подтверждение email</label>
             <label class="toggle-switch">
-              <input type="checkbox" disabled />
+              <input id="require-email-confirmation" type="checkbox" disabled />
               <span class="toggle-slider"></span>
             </label>
           </div>
           <div class="setting-item">
-            <label>Двухфакторная аутентификация</label>
+            <label for="two-factor-auth">Двухфакторная аутентификация</label>
             <label class="toggle-switch">
-              <input type="checkbox" disabled />
+              <input id="two-factor-auth" type="checkbox" disabled />
               <span class="toggle-slider"></span>
             </label>
           </div>
         </div>
         <div class="settings-row">
           <div class="setting-item">
-            <label>Максимальное количество попыток входа</label>
-            <input type="number" class="form-control" placeholder="—" disabled />
+            <label for="max-login-attempts">Максимальное количество попыток входа</label>
+            <input id="max-login-attempts" type="number" class="form-control" placeholder="—" disabled />
           </div>
           <div class="setting-item">
-            <label>Блокировка при превышении (минут)</label>
-            <input type="number" class="form-control" placeholder="—" disabled />
+            <label for="lockout-minutes">Блокировка при превышении (минут)</label>
+            <input id="lockout-minutes" type="number" class="form-control" placeholder="—" disabled />
           </div>
         </div>
       </div>
@@ -59,26 +59,26 @@
         <h3>Политика паролей</h3>
         <div class="settings-row">
           <div class="setting-item">
-            <label>Минимальная длина пароля</label>
-            <input type="number" class="form-control" placeholder="—" disabled />
+            <label for="min-password-length">Минимальная длина пароля</label>
+            <input id="min-password-length" type="number" class="form-control" placeholder="—" disabled />
           </div>
           <div class="setting-item">
-            <label>Требовать специальные символы</label>
+            <label for="require-special-chars">Требовать специальные символы</label>
             <label class="toggle-switch">
-              <input type="checkbox" disabled />
+              <input id="require-special-chars" type="checkbox" disabled />
               <span class="toggle-slider"></span>
             </label>
           </div>
         </div>
         <div class="settings-row">
           <div class="setting-item">
-            <label>Срок действия пароля (дней)</label>
-            <input type="number" class="form-control" placeholder="—" disabled />
+            <label for="password-expiry-days">Срок действия пароля (дней)</label>
+            <input id="password-expiry-days" type="number" class="form-control" placeholder="—" disabled />
           </div>
           <div class="setting-item">
-            <label>Запрещать повторение паролей</label>
+            <label for="prevent-password-reuse">Запрещать повторение паролей</label>
             <label class="toggle-switch">
-              <input type="checkbox" disabled />
+              <input id="prevent-password-reuse" type="checkbox" disabled />
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -89,29 +89,29 @@
         <h3>Защита от атак</h3>
         <div class="settings-row">
           <div class="setting-item">
-            <label>Защита от CSRF атак</label>
+            <label for="csrf-protection">Защита от CSRF атак</label>
             <label class="toggle-switch">
-              <input type="checkbox" disabled />
+              <input id="csrf-protection" type="checkbox" disabled />
               <span class="toggle-slider"></span>
             </label>
           </div>
           <div class="setting-item">
-            <label>Защита от XSS атак</label>
+            <label for="xss-protection">Защита от XSS атак</label>
             <label class="toggle-switch">
-              <input type="checkbox" disabled />
+              <input id="xss-protection" type="checkbox" disabled />
               <span class="toggle-slider"></span>
             </label>
           </div>
         </div>
         <div class="settings-row">
           <div class="setting-item">
-            <label>Ограничение запросов в секунду</label>
-            <input type="number" class="form-control" placeholder="—" disabled />
+            <label for="rate-limit-per-second">Ограничение запросов в секунду</label>
+            <input id="rate-limit-per-second" type="number" class="form-control" placeholder="—" disabled />
           </div>
           <div class="setting-item">
-            <label>Блокировка подозрительных IP</label>
+            <label for="block-suspicious-ips">Блокировка подозрительных IP</label>
             <label class="toggle-switch">
-              <input type="checkbox" disabled />
+              <input id="block-suspicious-ips" type="checkbox" disabled />
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -122,30 +122,30 @@
         <h3>SSL и шифрование</h3>
         <div class="settings-row">
           <div class="setting-item">
-            <label>Принудительное HTTPS</label>
+            <label for="force-https">Принудительное HTTPS</label>
             <label class="toggle-switch">
-              <input type="checkbox" disabled />
+              <input id="force-https" type="checkbox" disabled />
               <span class="toggle-slider"></span>
             </label>
           </div>
           <div class="setting-item">
-            <label>HSTS заголовок</label>
+            <label for="hsts-header">HSTS заголовок</label>
             <label class="toggle-switch">
-              <input type="checkbox" disabled />
+              <input id="hsts-header" type="checkbox" disabled />
               <span class="toggle-slider"></span>
             </label>
           </div>
         </div>
         <div class="settings-row">
           <div class="setting-item">
-            <label>Алгоритм шифрования</label>
-            <select class="form-control" disabled>
+            <label for="encryption-algorithm">Алгоритм шифрования</label>
+            <select id="encryption-algorithm" class="form-control" disabled>
               <option>—</option>
             </select>
           </div>
           <div class="setting-item">
-            <label>Срок действия SSL сертификата</label>
-            <input type="text" class="form-control" placeholder="—" readonly disabled />
+            <label for="ssl-cert-expiry">Срок действия SSL сертификата</label>
+            <input id="ssl-cert-expiry" type="text" class="form-control" placeholder="—" readonly disabled />
           </div>
         </div>
       </div>

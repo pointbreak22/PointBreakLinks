@@ -1,0 +1,17 @@
+# Normalize line endings to LF in the repository regardless of a contributor's local
+# core.autocrlf — this repo is edited from Windows (core.autocrlf=true converts on checkout),
+# but GitHub Actions' ubuntu-latest runners have no such conversion, so without this the stored
+# line endings would depend on whoever last touched a file rather than being consistent.
+* text=auto eol=lf
+
+# Never attempt line-ending conversion on binaries — doing so silently corrupts them.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary

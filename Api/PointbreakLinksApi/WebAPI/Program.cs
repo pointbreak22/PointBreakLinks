@@ -105,6 +105,13 @@ builder.Services.AddOpenApi();
 builder.Services.AddExceptionHandler<DomainExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+// /health pings both independent DbContexts (business schema `public` + Identity's `identity`,
+// see PROJECT_MAP.md) — either one being unreachable means the app can't actually serve
+// requests, so a deploy/orchestration readiness probe should fail on either.
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<Infrastructure.Persistence.ApplicationDbContext>("business-db")
+    .AddDbContextCheck<Identity.Infrastructure.Persistence.IdentityDbContext>("identity-db");
+
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddIdentityInfrastructure(builder.Configuration);
 
@@ -161,9 +168,31 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 
+// Baseline hardening headers on every response. Not a Content-Security-Policy — this API
+// serves JSON to a separate Angular origin plus a handful of served files (site screenshots,
+// message attachments) rather than HTML it renders itself, so there's no inline-script/style
+// surface for a CSP to restrict here the way there would be on a server-rendered app.
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+    await next();
+});
+
+// Dev uses a self-signed localhost cert — HSTS's browser-side "always upgrade to HTTPS, even if
+// the user typed http://" would stick around after the app stops running locally and break
+// plain http://localhost access for anything else on the machine. Non-dev only, same reasoning
+// the default ASP.NET Core template uses.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+
 app.MapOpenApi();
 app.MapScalarApiReference();
 app.MapGet("/", () => Results.Redirect("/scalar/v1"));
+app.MapHealthChecks("/health");
 
 app.UseHttpsRedirection();
 app.UseCors();

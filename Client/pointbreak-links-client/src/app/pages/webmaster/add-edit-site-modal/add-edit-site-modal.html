@@ -54,7 +54,7 @@
 
           @if (isEdit()) {
             <div class="form-group">
-              <label>Скриншот площадки</label>
+              <span class="form-caption">Скриншот площадки</span>
               @if (hasScreenshot()) {
                 <img [src]="screenshotUrl()" alt="Скриншот площадки" class="mb-2 max-h-40 rounded-(--border-radius-sm) border" style="border-color: var(--border-color)" />
                 <div class="flex gap-2">
