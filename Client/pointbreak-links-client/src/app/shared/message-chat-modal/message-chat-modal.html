@@ -1,0 +1,89 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div class="modal-content flex max-h-[80vh] flex-col" style="max-width: 500px" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Чат с {{ order().buyer.name }}</h3>
+      <button type="button" class="modal-close" (click)="close.emit()" aria-label="Закрыть">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="border-b px-6 py-3 text-sm" style="border-color: var(--border-color); color: var(--text-muted)">
+      Заказ: <span style="color: var(--text-primary)">{{ order().site.url }}</span>
+      · Цена: <span style="color: var(--text-primary)">{{ order().priceFinal }} ₽</span>
+    </div>
+
+    <div class="flex-1 space-y-3 overflow-y-auto px-6 py-4">
+      @if (loading()) {
+        <p class="text-center text-sm" style="color: var(--text-muted)"><i class="fas fa-spinner fa-spin"></i> Загрузка сообщений...</p>
+      } @else if (messages().length === 0) {
+        <p class="text-center text-sm" style="color: var(--text-muted)">Сообщений пока нет — начните диалог.</p>
+      } @else {
+        @for (message of messages(); track message.id) {
+          <div class="flex" [class.justify-end]="message.senderId === userStore.currentUser()?.id">
+            <div
+              class="max-w-[75%] rounded-(--border-radius) px-4 py-2 text-sm"
+              [style.background]="message.senderId === userStore.currentUser()?.id ? 'var(--gradient)' : 'var(--bg-card)'"
+              [style.color]="message.senderId === userStore.currentUser()?.id ? 'white' : 'var(--text-primary)'"
+            >
+              @if (message.text) {
+                <p>{{ message.text }}</p>
+              }
+              @if (message.attachmentFileName) {
+                @if (imagePreviews().get(message.id); as previewUrl) {
+                  <button
+                    type="button"
+                    class="mt-1 block cursor-pointer border-0 bg-transparent p-0"
+                    title="Скачать {{ message.attachmentFileName }}"
+                    (click)="downloadAttachment(message)"
+                  >
+                    <img [src]="previewUrl" [alt]="message.attachmentFileName" class="max-h-48 max-w-full rounded-(--border-radius-sm)" />
+                  </button>
+                } @else {
+                  <button
+                    type="button"
+                    class="mt-1 flex items-center gap-2 rounded-(--border-radius-sm) border px-2 py-1 text-xs"
+                    style="border-color: rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.1); color: inherit"
+                    [disabled]="downloadingId() === message.id"
+                    (click)="downloadAttachment(message)"
+                  >
+                    @if (downloadingId() === message.id) {
+                      <i class="fas fa-spinner fa-spin"></i>
+                    } @else {
+                      <i class="fas fa-paperclip"></i>
+                    }
+                    {{ message.attachmentFileName }}
+                  </button>
+                }
+              }
+              <p class="mt-1 text-[11px] opacity-70">{{ message.createdAt }}</p>
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    <form class="flex items-end gap-2 border-t p-4" style="border-color: var(--border-color)" (ngSubmit)="send()">
+      <input #fileInput type="file" hidden (change)="onFileSelected($event)" />
+      <button
+        type="button"
+        class="secondary-btn"
+        title="Прикрепить файл"
+        [disabled]="sending()"
+        (click)="fileInput.click()"
+      >
+        <i class="fas fa-paperclip"></i>
+      </button>
+      <textarea
+        [(ngModel)]="draftText"
+        name="draftText"
+        rows="1"
+        placeholder="Введите сообщение..."
+        class="form-control flex-1"
+        (keydown.enter)="$event.preventDefault(); send()"
+      ></textarea>
+      <button type="submit" class="primary-btn" [disabled]="sending() || !draftText.trim()">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </form>
+  </div>
+</div>

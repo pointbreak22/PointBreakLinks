@@ -1,0 +1,46 @@
+<app-header />
+
+<div class="main-container">
+  <app-sidebar />
+
+  <main class="content">
+    <div class="workspace-header">
+      <h2><i class="fas fa-history"></i> Журнал действий модерации</h2>
+    </div>
+
+    <div class="table-container">
+      <div class="table-header" style="grid-template-columns: 1fr 200px 140px 160px">
+        <div>URL</div>
+        <div>Модератор</div>
+        <div>Действие</div>
+        <div>Дата</div>
+      </div>
+
+      @if (logStore.loading()) {
+        <div class="loading-placeholder"><i class="fas fa-spinner fa-spin"></i> Загрузка данных...</div>
+      } @else if (logStore.entries().length === 0) {
+        <div class="loading-placeholder">Записей пока нет.</div>
+      } @else {
+        @for (entry of logStore.entries(); track $index) {
+          <div class="table-row" style="grid-template-columns: 1fr 200px 140px 160px">
+            <div class="site-info"><div class="site-url">{{ entry.siteUrl }}</div></div>
+            <div>{{ entry.moderatorName }}</div>
+            <div>
+              @if (entry.action === 'approved') {
+                <span style="color: var(--success)"><i class="fas fa-check-circle"></i> Одобрено</span>
+              } @else {
+                <span style="color: var(--danger)"><i class="fas fa-times-circle"></i> Отклонено</span>
+                @if (entry.reason) {
+                  <div class="text-xs" style="color: var(--text-muted)">{{ entry.reason }}</div>
+                }
+              }
+            </div>
+            <div><span class="date">{{ entry.createdAt }}</span></div>
+          </div>
+        }
+      }
+    </div>
+
+    <app-pagination [meta]="logStore.meta()" (pageChange)="changePage($event)" />
+  </main>
+</div>

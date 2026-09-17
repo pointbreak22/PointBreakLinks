@@ -1,0 +1,51 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Отзыв о {{ order().site.url }}</h3>
+      <button type="button" class="modal-close" (click)="close.emit()" aria-label="Закрыть">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Оценка</label>
+        <div class="flex gap-1" style="font-size: 28px">
+          @for (star of stars; track star) {
+            <button
+              type="button"
+              style="background: none; border: none; cursor: pointer; padding: 0"
+              [style.color]="star <= rating() ? '#f5a623' : 'var(--border-color)'"
+              (click)="setRating(star)"
+              [attr.aria-label]="'Оценка ' + star"
+            >
+              <i class="fas fa-star"></i>
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="review-comment">Комментарий (необязательно)</label>
+        <textarea
+          id="review-comment"
+          class="form-control"
+          rows="3"
+          placeholder="Как прошло размещение?"
+          [value]="comment()"
+          (input)="onCommentInput($event)"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="secondary-btn" (click)="close.emit()">Отмена</button>
+      <button type="button" class="primary-btn" [disabled]="submitting()" (click)="submit()">
+        @if (submitting()) {
+          <i class="fas fa-spinner fa-spin"></i>
+        }
+        Отправить отзыв
+      </button>
+    </div>
+  </div>
+</div>

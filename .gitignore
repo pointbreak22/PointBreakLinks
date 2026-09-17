@@ -1,0 +1,24 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+
+# User-uploaded content (runtime data, not source — GUID-named files under wwwroot/uploads)
+Api/PointbreakLinksApi/WebAPI/wwwroot/uploads/*/*
+!Api/PointbreakLinksApi/WebAPI/wwwroot/uploads/*/.gitkeep
+
+# Angular / Node
+node_modules/
+.angular/
+dist/
+npm-debug.log*
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Claude Code project state (session-local, not part of the app)
+.claude/

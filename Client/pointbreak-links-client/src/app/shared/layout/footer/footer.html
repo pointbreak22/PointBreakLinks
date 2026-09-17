@@ -1,0 +1,72 @@
+<footer class="border-t pt-20" style="background: var(--bg-secondary); border-color: var(--border-color)">
+  <div class="mx-auto max-w-[1200px] px-5">
+    <div class="mb-16 grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4">
+      <div>
+        <div class="mb-6 text-2xl font-extrabold" style="color: var(--text-primary)">
+          Pointbreak<span style="color: var(--primary)">Links</span>
+        </div>
+        <p class="mb-6 leading-relaxed" style="color: var(--text-muted)">
+          Платформа №1 для покупки и продажи качественных ссылок с гарантией индексации. Более 15 000
+          довольных клиентов по всему миру.
+        </p>
+        <div class="flex justify-center gap-4 sm:justify-start">
+          @for (icon of ['telegram', 'vk', 'youtube', 'instagram']; track icon) {
+            <a
+              href="#"
+              class="flex h-10 w-10 items-center justify-center rounded-full no-underline transition-[var(--transition)] hover:text-white"
+              style="background: rgba(255,255,255,0.1); color: var(--text-primary)"
+            >
+              <i class="fab" [class]="'fa-' + icon"></i>
+            </a>
+          }
+        </div>
+      </div>
+
+      <div>
+        <h3 class="mb-4 font-semibold" style="color: var(--text-primary)">Разделы</h3>
+        <div class="flex flex-col gap-3">
+          <a href="#home" class="no-underline transition-[var(--transition)]" style="color: var(--text-muted)">Главная</a>
+          <a href="/register" class="no-underline transition-[var(--transition)]" style="color: var(--text-muted)"
+            >Покупка ссылок</a
+          >
+          <a href="/register" class="no-underline transition-[var(--transition)]" style="color: var(--text-muted)"
+            >Продажа ссылок</a
+          >
+          <a routerLink="/knowledge" class="no-underline transition-[var(--transition)]" style="color: var(--text-muted)"
+            >База знаний</a
+          >
+        </div>
+      </div>
+
+      <div>
+        <h3 class="mb-4 font-semibold" style="color: var(--text-primary)">Информация</h3>
+        <div class="flex flex-col gap-3">
+          <a href="#" class="no-underline transition-[var(--transition)]" style="color: var(--text-muted)">О проекте</a>
+          <a href="#" class="no-underline transition-[var(--transition)]" style="color: var(--text-muted)">Правила</a>
+          <a href="#" class="no-underline transition-[var(--transition)]" style="color: var(--text-muted)">Техподдержка</a>
+          <a href="#" class="no-underline transition-[var(--transition)]" style="color: var(--text-muted)"
+            >Правовая информация</a
+          >
+        </div>
+      </div>
+
+      <div>
+        <h3 class="mb-4 font-semibold" style="color: var(--text-primary)">Контакты</h3>
+        <div class="flex flex-col gap-3">
+          <a
+            href="mailto:support@pointbreaklinks.com"
+            class="no-underline transition-[var(--transition)]"
+            style="color: var(--text-muted)"
+            >support&#64;pointbreaklinks.com</a
+          >
+          <a href="#" class="no-underline transition-[var(--transition)]" style="color: var(--text-muted)">Telegram канал</a>
+          <a href="#" class="no-underline transition-[var(--transition)]" style="color: var(--text-muted)">Сообщество</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="border-t py-8 text-center" style="border-color: var(--border-color); color: var(--text-muted)">
+      <p>&copy; {{ currentYear }} PointbreakLinks. Все права защищены.</p>
+    </div>
+  </div>
+</footer>

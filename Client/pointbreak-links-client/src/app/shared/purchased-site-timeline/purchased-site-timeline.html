@@ -1,0 +1,21 @@
+<div>
+  <h4 class="mb-3 font-semibold" style="color: var(--text-primary)"><i class="fas fa-history"></i> История заказа</h4>
+
+  @if (loading()) {
+    <p class="text-sm" style="color: var(--text-muted)">Загрузка...</p>
+  } @else if (events().length === 0) {
+    <p class="text-sm" style="color: var(--text-muted)">История пока пуста.</p>
+  } @else {
+    <ol class="flex flex-col gap-3">
+      @for (event of events(); track event.id) {
+        <li class="flex items-start gap-3 text-sm">
+          <i class="fas fa-circle mt-1 text-[6px]" style="color: var(--primary)"></i>
+          <div>
+            <p style="color: var(--text-primary)">{{ event.description }}</p>
+            <small style="color: var(--text-muted)">{{ event.createdAt | date: 'dd.MM.yyyy HH:mm' }}</small>
+          </div>
+        </li>
+      }
+    </ol>
+  }
+</div>

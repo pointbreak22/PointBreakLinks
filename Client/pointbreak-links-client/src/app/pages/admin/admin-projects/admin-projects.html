@@ -1,0 +1,43 @@
+<app-header />
+
+<div class="main-container">
+  <app-sidebar />
+
+  <main class="content">
+    <div class="workspace-header">
+      <h2><i class="fas fa-folder"></i> Проекты</h2>
+    </div>
+
+    <div class="table-container">
+      <div class="table-header" style="grid-template-columns: 1fr 160px 110px 110px 130px 120px">
+        <div>Проект</div>
+        <div>Владелец</div>
+        <div>Тип</div>
+        <div>Ссылок</div>
+        <div>Потрачено</div>
+        <div>Создан</div>
+      </div>
+
+      @if (adminStore.projectsLoading()) {
+        <div class="loading-placeholder"><i class="fas fa-spinner fa-spin"></i> Загрузка данных...</div>
+      } @else if (adminStore.projects().length === 0) {
+        <div class="loading-placeholder">Проекты не найдены.</div>
+      } @else {
+        @for (project of adminStore.projects(); track project.id) {
+          <div class="table-row" style="grid-template-columns: 1fr 160px 110px 110px 130px 120px">
+            <div class="site-info">
+              <div class="site-url">{{ project.name }}</div>
+            </div>
+            <div>{{ project.ownerName }}</div>
+            <div>{{ project.type }}</div>
+            <div>{{ project.linksPosted }} / {{ project.totalLinks }}</div>
+            <div>{{ project.spentMoney }} ₽</div>
+            <div><span class="date">{{ project.createdAt }}</span></div>
+          </div>
+        }
+      }
+    </div>
+
+    <app-pagination [meta]="adminStore.projectsMeta()" (pageChange)="changePage($event)" />
+  </main>
+</div>

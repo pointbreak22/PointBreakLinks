@@ -1,0 +1,72 @@
+<app-header />
+
+<main class="mx-auto max-w-3xl px-4 pt-24 pb-12">
+  @if (loading()) {
+    <p class="text-center text-sm" style="color: var(--text-muted)"><i class="fas fa-spinner fa-spin"></i> Загрузка...</p>
+  } @else if (notFound()) {
+    <p class="text-center text-sm" style="color: var(--text-muted)">Продавец не найден.</p>
+  } @else if (profile(); as seller) {
+    <section
+      class="mb-6 rounded-(--border-radius-lg) border p-6 shadow-(--shadow-2xl)"
+      style="background: var(--bg-card); border-color: var(--border-color)"
+    >
+      <h1 class="mb-1 text-2xl font-extrabold" style="color: var(--text-primary)">{{ seller.name }}</h1>
+      <p class="mb-3 text-sm" style="color: var(--text-muted)">На платформе с {{ seller.memberSince }}</p>
+
+      @if (seller.averageRating; as rating) {
+        <div class="flex items-center gap-2">
+          <div class="flex gap-0.5">
+            @for (star of stars; track star) {
+              <i class="fas fa-star" [style.color]="star <= rating ? '#f5a623' : 'var(--border-color)'"></i>
+            }
+          </div>
+          <span class="text-sm" style="color: var(--text-secondary)">{{ rating }} ({{ seller.reviewsCount }} отзывов)</span>
+        </div>
+      } @else {
+        <p class="text-sm" style="color: var(--text-muted)">Отзывов пока нет.</p>
+      }
+    </section>
+
+    <section
+      class="rounded-(--border-radius-lg) border p-6 shadow-(--shadow-2xl)"
+      style="background: var(--bg-card); border-color: var(--border-color)"
+    >
+      <h2 class="mb-4 text-lg font-bold" style="color: var(--text-primary)">Активные площадки ({{ seller.activeSites.length }})</h2>
+
+      @if (seller.activeSites.length === 0) {
+        <p class="text-sm" style="color: var(--text-muted)">У продавца пока нет активных площадок.</p>
+      } @else {
+        <div class="flex flex-col gap-3">
+          @for (site of seller.activeSites; track site.id) {
+            <div class="flex items-center justify-between rounded-(--border-radius-sm) border p-3" style="border-color: var(--border-color)">
+              <div class="flex items-center gap-3">
+                @if (site.hasScreenshot) {
+                  <img [src]="screenshotUrl(site.id)" alt="" class="h-12 w-16 rounded-(--border-radius-sm) border object-cover" style="border-color: var(--border-color)" />
+                }
+                <div>
+                  <div class="font-semibold" style="color: var(--text-primary)">
+                    {{ site.url }}
+                    @if (site.isVerified) {
+                      <i class="fas fa-check-circle" style="color: var(--success)" title="Владение подтверждено"></i>
+                    }
+                  </div>
+                  <div class="text-xs" style="color: var(--text-muted)">{{ site.topic }} · ИКС {{ site.iks }} · DR {{ site.dr }}</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="price">{{ site.price | number: '1.0-2' }} ₽</span>
+                <button type="button" class="btn-small" (click)="openBuy(site)">
+                  <i class="fas fa-shopping-cart"></i> Купить
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </section>
+  }
+</main>
+
+@if (buyingSite(); as site) {
+  <app-buy-miralinks-modal [site]="site" (close)="closeBuy()" />
+}

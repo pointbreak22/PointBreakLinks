@@ -1,0 +1,153 @@
+<button
+  type="button"
+  class="sidebar-mobile-toggle"
+  (click)="sidebarService.toggleMobile()"
+  [attr.aria-expanded]="sidebarService.isMobileOpen()"
+  aria-label="Открыть меню раздела"
+>
+  <i class="fas" [class.fa-bars]="!sidebarService.isMobileOpen()" [class.fa-times]="sidebarService.isMobileOpen()"></i>
+</button>
+
+@if (sidebarService.isMobileOpen()) {
+  <button type="button" class="sidebar-backdrop" (click)="sidebarService.closeMobile()" aria-label="Закрыть меню раздела"></button>
+}
+
+<aside class="sidebar" [class.collapsed]="sidebarService.isCollapsed()" [class.mobile-open]="sidebarService.isMobileOpen()">
+  @if (userStore.isAdmin()) {
+    <div class="sidebar-section">
+      <div class="section-title"><i class="fas fa-crown"></i> Админ-панель</div>
+      <ul class="nav-list">
+        <a routerLink="/admin-dashboard" routerLinkActive="active" class="nav-item"><span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span><span>Дашборд</span></a>
+        <a routerLink="/admin-projects" routerLinkActive="active" class="nav-item"><span class="nav-icon"><i class="fas fa-folder"></i></span><span>Проекты</span></a>
+        <a routerLink="/admin-transactions" routerLinkActive="active" class="nav-item"><span class="nav-icon"><i class="fas fa-exchange-alt"></i></span><span>Транзакции</span></a>
+        <a routerLink="/admin-system-logs" routerLinkActive="active" class="nav-item"><span class="nav-icon"><i class="fas fa-clipboard-list"></i></span><span>Логи системы</span></a>
+        <a routerLink="/moderation/log" routerLinkActive="active" class="nav-item"><span class="nav-icon"><i class="fas fa-history"></i></span><span>Журнал модерации</span></a>
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-title"><i class="fas fa-tools"></i> Инструменты</div>
+      <ul class="nav-list">
+        <a routerLink="/analytics" routerLinkActive="active" class="nav-item"><span class="nav-icon"><i class="fas fa-chart-bar"></i></span><span>Аналитика</span></a>
+        <a routerLink="/admin-reports" routerLinkActive="active" class="nav-item"><span class="nav-icon"><i class="fas fa-file-alt"></i></span><span>Отчеты</span></a>
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-title"><i class="fas fa-headset"></i> Поддержка</div>
+      <ul class="nav-list">
+        <a routerLink="/admin-support" routerLinkActive="active" class="nav-item"><span class="nav-icon"><i class="fas fa-comments"></i></span><span>Обращения</span></a>
+        <a routerLink="/admin-disputes" routerLinkActive="active" class="nav-item"><span class="nav-icon"><i class="fas fa-gavel"></i></span><span>Споры</span></a>
+        <a routerLink="/admin-withdrawals" routerLinkActive="active" class="nav-item"><span class="nav-icon"><i class="fas fa-money-bill-wave"></i></span><span>Заявки на вывод</span></a>
+      </ul>
+    </div>
+  } @else {
+    @if (isProjectOrAnalytics()) {
+      <div class="sidebar-section">
+        <div class="section-title"><i class="fas fa-shopping-cart"></i> Покупка ссылок</div>
+        <ul class="nav-list">
+          <a routerLink="/projects" routerLinkActive="active" class="nav-item"><span class="nav-icon"><i class="fas fa-folder"></i></span><span>Мои проекты</span></a>
+          <a routerLink="/favorites" routerLinkActive="active" class="nav-item"><span class="nav-icon"><i class="fas fa-star"></i></span><span>Избранные площадки</span></a>
+        </ul>
+      </div>
+    }
+
+    @if (isOptimizator()) {
+      <div class="sidebar-section">
+        <div class="section-title"><i class="fas fa-shopping-cart"></i> Покупка ссылок</div>
+        <ul class="nav-list">
+          <li class="nav-item active"><span class="nav-icon"><i class="fas fa-folder"></i></span><span>Список площадок</span></li>
+          <a routerLink="/coming-soon" class="nav-item"><span class="nav-icon"><i class="fas fa-search"></i></span><span>Поиск площадок</span></a>
+
+          <li class="nav-item dropdown-toggle" (click)="toggleDropdown('buy')">
+            <div style="display: flex; align-items: center; flex: 1">
+              <span class="nav-icon"><i class="fas fa-tasks"></i></span><span>Мои заказы</span>
+            </div>
+            <span class="toggle-icon"><i class="fas" [class.fa-minus]="dropdowns().buy" [class.fa-plus]="!dropdowns().buy"></i></span>
+          </li>
+          <div class="dropdown-content" [class.show]="dropdowns().buy">
+            <div class="dropdown-item"><span class="nav-icon"><i class="fas fa-eye"></i></span><span>На рассмотрении</span></div>
+            <div class="dropdown-item"><span class="nav-icon"><i class="fas fa-cog"></i></span><span>В работе</span></div>
+            <div class="dropdown-item"><span class="nav-icon"><i class="fas fa-check"></i></span><span>Оплачено</span></div>
+            <div class="dropdown-item"><span class="nav-icon"><i class="fas fa-times"></i></span><span>Отменено</span></div>
+          </div>
+
+          <a routerLink="/favorites" routerLinkActive="active" class="nav-item"><span class="nav-icon"><i class="fas fa-star"></i></span><span>Избранные площадки</span></a>
+        </ul>
+      </div>
+    }
+
+    @if (isPosition()) {
+      <div class="sidebar-section">
+        <div class="section-title"><i class="fas fa-chart-line"></i> Мониторинг позиций</div>
+        <ul class="nav-list">
+          <li class="nav-item active"><span class="nav-icon"><i class="fas fa-chart-bar"></i></span><span>Динамика запросов</span></li>
+          <a routerLink="/coming-soon" class="nav-item"><span class="nav-icon"><i class="fas fa-search"></i></span><span>Поисковые запросы</span></a>
+
+          <li class="nav-item dropdown-toggle" (click)="toggleDropdown('project')">
+            <div style="display: flex; align-items: center; flex: 1">
+              <span class="nav-icon"><i class="fas fa-folder"></i></span><span>Группы запросов</span>
+            </div>
+            <span class="toggle-icon"><i class="fas" [class.fa-minus]="dropdowns().project" [class.fa-plus]="!dropdowns().project"></i></span>
+          </li>
+          <div class="dropdown-content" [class.show]="dropdowns().project">
+            <div class="dropdown-item"><span class="nav-icon"><i class="fas fa-folder"></i></span><span>Все группы</span></div>
+            <div class="dropdown-item"><span class="nav-icon"><i class="fas fa-folder"></i></span><span>Зеркало с подсветкой</span></div>
+            <div class="dropdown-item"><span class="nav-icon"><i class="fas fa-folder"></i></span><span>Блог</span></div>
+          </div>
+
+          <a routerLink="/coming-soon" class="nav-item"><span class="nav-icon"><i class="fas fa-cog"></i></span><span>Настройки проекта</span></a>
+        </ul>
+      </div>
+    }
+
+    @if (isModeration()) {
+      <div class="sidebar-section">
+        <div class="section-title"><i class="fas fa-clipboard-check"></i> Модерация</div>
+        <ul class="nav-list">
+          <a routerLink="/moderation" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
+            <span class="nav-icon"><i class="fas fa-list"></i></span><span>Площадки на проверке</span>
+          </a>
+          <a routerLink="/moderation/log" routerLinkActive="active" class="nav-item">
+            <span class="nav-icon"><i class="fas fa-history"></i></span><span>Журнал действий</span>
+          </a>
+        </ul>
+      </div>
+    }
+
+    @if (isWebmaster()) {
+      <div class="sidebar-section">
+        <div class="section-title"><i class="fas fa-store"></i> Продажа ссылок</div>
+        <ul class="nav-list">
+          <li class="nav-item" [class.active]="webmasterTab() === 'platforms'" (click)="setWebmasterTab('platforms')">
+            <span class="nav-icon"><i class="fas fa-list"></i></span><span>Мои площадки</span>
+          </li>
+          <li class="nav-item" [class.active]="webmasterTab() === 'sales'" (click)="setWebmasterTab('sales')">
+            <span class="nav-icon"><i class="fas fa-shopping-cart"></i></span><span>Мои продажи</span>
+          </li>
+        </ul>
+      </div>
+    }
+
+    <div class="sidebar-section">
+      <div class="section-title"><i class="fas fa-tools"></i> Инструменты</div>
+      <ul class="nav-list">
+        <a routerLink="/analytics" routerLinkActive="active" class="nav-item"><span class="nav-icon"><i class="fas fa-chart-bar"></i></span><span>Аналитика</span></a>
+        <a routerLink="/coming-soon" class="nav-item"><span class="nav-icon"><i class="fas fa-tools"></i></span><span>Все инструменты</span></a>
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-title"><i class="fas fa-headset"></i> Поддержка</div>
+      <ul class="nav-list">
+        <a routerLink="/support" routerLinkActive="active" class="nav-item"><span class="nav-icon"><i class="fas fa-comments"></i></span><span>Обратная связь</span></a>
+        <a routerLink="/knowledge" routerLinkActive="active" class="nav-item"><span class="nav-icon"><i class="fas fa-book"></i></span><span>База знаний</span></a>
+      </ul>
+    </div>
+  }
+
+  <button type="button" class="collapse-sidebar" (click)="sidebarService.toggle()">
+    <i class="fas" [class.fa-arrow-right]="sidebarService.isCollapsed()" [class.fa-arrow-left]="!sidebarService.isCollapsed()"></i>
+    <span>Свернуть</span>
+  </button>
+</aside>

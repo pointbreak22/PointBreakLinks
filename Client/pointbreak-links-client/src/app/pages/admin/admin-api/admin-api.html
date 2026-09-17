@@ -1,0 +1,57 @@
+<app-header />
+
+<div class="main-container">
+  <app-sidebar />
+
+  <main class="content" [class.collapsed]="sidebarService.isCollapsed()">
+    <div class="workspace-header">
+      <h2><i class="fas fa-code"></i> Управление API</h2>
+      <div class="workspace-actions">
+        <button type="button" class="primary-btn" (click)="notifyUnavailable()">
+          <i class="fas fa-key"></i> Создать API ключ
+        </button>
+      </div>
+    </div>
+
+    <div
+      class="mb-6 flex items-start gap-3 rounded-(--border-radius) border p-4 text-sm"
+      style="background: var(--bg-card); border-color: var(--warning); color: var(--text-secondary)"
+    >
+      <i class="fas fa-info-circle mt-0.5" style="color: var(--warning)"></i>
+      <p>
+        В приложении нет публичного API для внешних интеграций и, соответственно, ключей доступа к нему —
+        ниже макет интерфейса без выдуманной статистики.
+      </p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Активные API ключи</h3>
+        <div class="stat-number">—</div>
+      </div>
+      <div class="stat-card">
+        <h3>API запросы (24ч)</h3>
+        <div class="stat-number">—</div>
+      </div>
+      <div class="stat-card">
+        <h3>Ошибки API</h3>
+        <div class="stat-number">—</div>
+      </div>
+      <div class="stat-card">
+        <h3>Среднее время ответа</h3>
+        <div class="stat-number">—</div>
+      </div>
+    </div>
+
+    <div class="mt-6 table-container">
+      <div class="table-header" style="grid-template-columns: 100px 1fr 130px 130px 100px">
+        <div>ID</div>
+        <div>Название ключа</div>
+        <div>Создан</div>
+        <div>Истекает</div>
+        <div>Статус</div>
+      </div>
+      <div class="loading-placeholder">Ключей пока нет.</div>
+    </div>
+  </main>
+</div>

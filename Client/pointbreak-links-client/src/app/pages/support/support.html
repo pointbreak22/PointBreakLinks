@@ -1,0 +1,53 @@
+<app-header />
+
+<main class="mx-auto max-w-3xl px-4 pt-24 pb-12">
+  <h1 class="mb-2 text-2xl font-extrabold" style="color: var(--text-primary)">Обратная связь</h1>
+  <p class="mb-6 text-sm" style="color: var(--text-muted)">
+    Напишите нам, если у вас есть вопрос или проблема — ответит служба поддержки.
+  </p>
+
+  <div
+    class="flex flex-col overflow-hidden rounded-(--border-radius-lg) border"
+    style="background: var(--bg-card); border-color: var(--border-color); height: calc(100vh - 260px); min-height: 360px"
+  >
+    <div class="flex-1 space-y-3 overflow-y-auto px-6 py-4">
+      @if (store.myThreadLoading()) {
+        <p class="text-center text-sm" style="color: var(--text-muted)"><i class="fas fa-spinner fa-spin"></i> Загрузка...</p>
+      } @else if (store.myThread().length === 0) {
+        <p class="text-center text-sm" style="color: var(--text-muted)">
+          Сообщений пока нет — напишите нам, если у вас есть вопрос.
+        </p>
+      } @else {
+        @for (message of store.myThread(); track message.id) {
+          <div class="flex" [class.justify-end]="!message.isFromStaff">
+            <div
+              class="max-w-[75%] rounded-(--border-radius) px-4 py-2 text-sm"
+              [style.background]="!message.isFromStaff ? 'var(--gradient)' : 'var(--bg-secondary)'"
+              [style.color]="!message.isFromStaff ? 'white' : 'var(--text-primary)'"
+            >
+              @if (message.isFromStaff) {
+                <p class="mb-0.5 text-xs font-semibold" style="color: var(--primary)">Поддержка</p>
+              }
+              <p>{{ message.text }}</p>
+              <p class="mt-1 text-[11px] opacity-70">{{ message.createdAt }}</p>
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    <form class="flex items-end gap-2 border-t p-4" style="border-color: var(--border-color)" (ngSubmit)="send()">
+      <textarea
+        [(ngModel)]="draftText"
+        name="draftText"
+        rows="1"
+        placeholder="Введите сообщение..."
+        class="form-control flex-1"
+        (keydown.enter)="$event.preventDefault(); send()"
+      ></textarea>
+      <button type="submit" class="primary-btn" [disabled]="store.mySending() || !draftText.trim()">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </form>
+  </div>
+</main>

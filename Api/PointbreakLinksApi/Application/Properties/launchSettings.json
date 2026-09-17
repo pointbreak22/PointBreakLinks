@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Профиль 1": {
+      "commandName": "Executable",
+      "executablePath": "E:\\Projects\\My Projects\\PointBreakLinks\\Api\\PointbreakLinksApi\\WebAPI\\Program.cs"
+    }
+  }
+}

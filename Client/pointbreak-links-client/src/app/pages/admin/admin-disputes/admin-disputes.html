@@ -1,0 +1,63 @@
+<app-header />
+
+<div class="main-container">
+  <app-sidebar />
+
+  <main class="content">
+    <div class="workspace-header">
+      <h2><i class="fas fa-gavel"></i> Споры</h2>
+    </div>
+
+    <div class="table-container">
+      <div class="table-header" style="grid-template-columns: 1fr 140px 140px 100px 1fr 130px 260px">
+        <div>Площадка</div>
+        <div>Покупатель</div>
+        <div>Продавец</div>
+        <div>Сумма</div>
+        <div>Причина</div>
+        <div>Открыт</div>
+        <div>Решение</div>
+      </div>
+
+      @if (adminStore.disputesLoading()) {
+        <div class="loading-placeholder"><i class="fas fa-spinner fa-spin"></i> Загрузка данных...</div>
+      } @else if (adminStore.disputes().length === 0) {
+        <div class="loading-placeholder">Открытых споров нет.</div>
+      } @else {
+        @for (dispute of adminStore.disputes(); track dispute.id) {
+          <div class="table-row" style="grid-template-columns: 1fr 140px 140px 100px 1fr 130px 260px">
+            <div class="text-muted">{{ dispute.siteUrl }}</div>
+            <div>{{ dispute.buyerName }}</div>
+            <div>{{ dispute.sellerName }}</div>
+            <div>{{ dispute.finalPrice }} ₽</div>
+            <div>{{ dispute.reason }}</div>
+            <div><span class="date">{{ dispute.updatedAt }}</span></div>
+            <div class="flex gap-2">
+              <button
+                type="button"
+                class="btn-small"
+                [disabled]="resolvingId() === dispute.id"
+                (click)="resolve(dispute.id, true)"
+                title="Вернуть деньги покупателю"
+              >
+                <i class="fas fa-undo"></i> Покупателю
+              </button>
+              <button
+                type="button"
+                class="btn-small"
+                style="background: var(--bg-secondary); color: var(--text-primary)"
+                [disabled]="resolvingId() === dispute.id"
+                (click)="resolve(dispute.id, false)"
+                title="Оставить оплату продавцу"
+              >
+                <i class="fas fa-check"></i> Продавцу
+              </button>
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    <app-pagination [meta]="adminStore.disputesMeta()" (pageChange)="changePage($event)" />
+  </main>
+</div>

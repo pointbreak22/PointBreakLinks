@@ -1,0 +1,112 @@
+<app-header />
+
+<div class="main-container">
+  <app-sidebar />
+
+  <main class="content">
+    <div class="workspace-header">
+      <h2><i class="fas fa-headset"></i> Поддержка</h2>
+    </div>
+
+    <div class="flex gap-4" style="height: calc(100vh - 220px); min-height: 400px">
+      <aside
+        class="w-full flex-col overflow-y-auto rounded-(--border-radius-lg) border lg:!flex lg:w-80 lg:shrink-0"
+        style="background: var(--bg-card); border-color: var(--border-color)"
+        [class.hidden]="store.activeTicket()"
+        [class.flex]="!store.activeTicket()"
+      >
+        @if (store.ticketsLoading()) {
+          <p class="p-6 text-center text-sm" style="color: var(--text-muted)"><i class="fas fa-spinner fa-spin"></i> Загрузка...</p>
+        } @else if (store.tickets().length === 0) {
+          <p class="p-6 text-center text-sm" style="color: var(--text-muted)">Обращений пока нет.</p>
+        } @else {
+          @for (ticket of store.tickets(); track ticket.id) {
+            <button
+              type="button"
+              class="flex w-full flex-col gap-1 border-b px-4 py-3 text-left"
+              style="border-color: var(--border-color)"
+              [style.background]="store.activeTicket()?.id === ticket.id ? 'var(--bg-card-hover)' : 'transparent'"
+              (click)="open(ticket)"
+            >
+              <div class="flex items-center justify-between gap-2">
+                <span class="font-semibold" style="color: var(--text-primary)">{{ ticket.userName }}</span>
+                @if (ticket.unreadCount > 0) {
+                  <span
+                    class="flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold text-white"
+                    style="background: var(--danger, #ef4444)"
+                  >
+                    {{ ticket.unreadCount > 9 ? '9+' : ticket.unreadCount }}
+                  </span>
+                }
+              </div>
+              <div class="truncate text-sm" style="color: var(--text-secondary)">{{ ticket.lastMessageText }}</div>
+              <div class="text-[11px]" style="color: var(--text-muted)">{{ ticket.lastMessageAt }}</div>
+            </button>
+          }
+
+          <div class="border-t px-2 py-2" style="border-color: var(--border-color)">
+            <app-pagination [meta]="store.ticketsMeta()" (pageChange)="changePage($event)" />
+          </div>
+        }
+      </aside>
+
+      <section
+        class="w-full flex-col overflow-hidden rounded-(--border-radius-lg) border lg:!flex lg:flex-1"
+        style="background: var(--bg-card); border-color: var(--border-color)"
+        [class.hidden]="!store.activeTicket()"
+        [class.flex]="!!store.activeTicket()"
+      >
+        @if (store.activeTicket(); as ticket) {
+          <div class="flex items-center gap-3 border-b px-4 py-3" style="border-color: var(--border-color)">
+            <button type="button" class="modal-close lg:hidden" (click)="back()" aria-label="Назад к списку">
+              <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="font-semibold" style="color: var(--text-primary)">{{ ticket.userName }}</div>
+          </div>
+
+          <div class="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+            @if (store.ticketThreadLoading()) {
+              <p class="text-center text-sm" style="color: var(--text-muted)"><i class="fas fa-spinner fa-spin"></i> Загрузка...</p>
+            } @else if (store.ticketThread().length === 0) {
+              <p class="text-center text-sm" style="color: var(--text-muted)">Сообщений пока нет.</p>
+            } @else {
+              @for (message of store.ticketThread(); track message.id) {
+                <div class="flex" [class.justify-end]="message.isFromStaff">
+                  <div
+                    class="max-w-[75%] rounded-(--border-radius) px-4 py-2 text-sm"
+                    [style.background]="message.isFromStaff ? 'var(--gradient)' : 'var(--bg-secondary)'"
+                    [style.color]="message.isFromStaff ? 'white' : 'var(--text-primary)'"
+                  >
+                    @if (message.isFromStaff) {
+                      <p class="mb-0.5 text-xs font-semibold opacity-90">{{ message.senderName }}</p>
+                    }
+                    <p>{{ message.text }}</p>
+                    <p class="mt-1 text-[11px] opacity-70">{{ message.createdAt }}</p>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+
+          <form class="flex items-end gap-2 border-t p-3" style="border-color: var(--border-color)" (ngSubmit)="send()">
+            <textarea
+              [(ngModel)]="draftText"
+              name="draftText"
+              rows="1"
+              placeholder="Ответить..."
+              class="form-control flex-1"
+              (keydown.enter)="$event.preventDefault(); send()"
+            ></textarea>
+            <button type="submit" class="primary-btn" [disabled]="store.replySending() || !draftText.trim()">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </form>
+        } @else {
+          <div class="flex flex-1 items-center justify-center p-6 text-center text-sm" style="color: var(--text-muted)">
+            Выберите обращение слева, чтобы посмотреть переписку.
+          </div>
+        }
+      </section>
+    </div>
+  </main>
+</div>

@@ -1,0 +1,21 @@
+@let state = toastService.state();
+
+<div
+  class="fixed top-5 right-5 z-[10000] flex min-w-[300px] items-center gap-3 rounded px-4 py-4 font-sans text-sm font-medium text-white shadow-lg transition-all duration-400"
+  [class.opacity-0]="!state.visible"
+  [class.translate-x-4]="!state.visible"
+  [class.pointer-events-none]="!state.visible"
+  [class.bg-emerald-600]="state.type === 'success'"
+  [class.bg-red-600]="state.type === 'error'"
+  [class.bg-sky-600]="state.type === 'info'"
+  role="status"
+  aria-live="polite"
+>
+  <i
+    class="fas text-lg opacity-90"
+    [class.fa-check-circle]="state.type === 'success'"
+    [class.fa-exclamation-circle]="state.type === 'error'"
+    [class.fa-info-circle]="state.type === 'info'"
+  ></i>
+  <span>{{ state.text }}</span>
+</div>

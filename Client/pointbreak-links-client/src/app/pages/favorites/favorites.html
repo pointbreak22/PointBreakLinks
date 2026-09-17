@@ -1,0 +1,63 @@
+<app-header />
+
+<div class="main-container">
+  <app-sidebar />
+
+  <main class="content">
+    <div class="workspace-header">
+      <h2><i class="fas fa-star"></i> Избранные площадки</h2>
+    </div>
+
+    <div class="sites-container">
+      <div class="table-container">
+        <div class="table-header" style="grid-template-columns: 1fr 70px 70px 1fr 110px 160px">
+          <div>URL</div>
+          <div>ИКС</div>
+          <div>DR</div>
+          <div>Тематика</div>
+          <div>Цена</div>
+          <div>Действия</div>
+        </div>
+
+        @if (favoritesStore.loading()) {
+          <div class="loading-placeholder"><i class="fas fa-spinner fa-spin"></i> Загрузка данных...</div>
+        } @else if (favoritesStore.sites().length === 0) {
+          <div class="loading-placeholder">Список избранного пуст — добавляйте площадки звёздочкой в каталоге.</div>
+        } @else {
+          @for (site of favoritesStore.sites(); track site.id) {
+            <div class="table-row" style="grid-template-columns: 1fr 70px 70px 1fr 110px 160px">
+              <div class="site-info">
+                <div class="site-url">
+                  {{ site.url }}
+                  @if (site.hasScreenshot) {
+                    <a [href]="screenshotUrl(site.id)" target="_blank" rel="noopener" title="Открыть скриншот площадки" style="color: var(--text-muted)">
+                      <i class="fas fa-image"></i>
+                    </a>
+                  }
+                </div>
+              </div>
+              <div>{{ site.iks }}</div>
+              <div>{{ site.dr }}</div>
+              <div>{{ site.topic }}</div>
+              <div><span class="price">{{ site.price | number: '1.0-2' }} ₽</span></div>
+              <div class="flex gap-2">
+                <button type="button" class="btn-small" (click)="openBuy(site)">
+                  <i class="fas fa-shopping-cart"></i> Купить
+                </button>
+                <button type="button" class="modal-close" (click)="removeFavorite(site.id)" aria-label="Убрать из избранного">
+                  <i class="fas fa-star" style="color: var(--primary)"></i>
+                </button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+
+      <app-pagination [meta]="favoritesStore.meta()" (pageChange)="changePage($event)" />
+    </div>
+  </main>
+</div>
+
+@if (buyingSite(); as site) {
+  <app-buy-miralinks-modal [site]="site" (close)="closeBuy()" (purchased)="onPurchased()" />
+}

@@ -1,0 +1,38 @@
+@if (meta().lastPage > 1) {
+  <nav class="pagination" aria-label="Постраничная навигация">
+    <div class="pagination-controls">
+      <button
+        type="button"
+        class="pagination-btn"
+        [disabled]="meta().currentPage === 1"
+        (click)="goTo(meta().currentPage - 1)"
+        aria-label="Предыдущая страница"
+      >
+        <i class="fas fa-chevron-left"></i>
+      </button>
+
+      @for (page of pages(); track page) {
+        <button
+          type="button"
+          class="pagination-btn"
+          [class.active]="page === meta().currentPage"
+          (click)="goTo(page)"
+        >
+          {{ page }}
+        </button>
+      }
+
+      <button
+        type="button"
+        class="pagination-btn"
+        [disabled]="meta().currentPage === meta().lastPage"
+        (click)="goTo(meta().currentPage + 1)"
+        aria-label="Следующая страница"
+      >
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <span class="pagination-info">Всего: {{ meta().total }}</span>
+  </nav>
+}

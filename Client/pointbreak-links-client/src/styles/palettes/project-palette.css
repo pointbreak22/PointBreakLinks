@@ -1,0 +1,77 @@
+/* Palette tokens for the buyer's projects area. Ported from FOXLinks' project-palette.css. */
+body[data-palette='project'] {
+  --primary: #ff9b00;
+  --primary-dark: #f90;
+  --primary-light: #fff5e6;
+  --secondary: #28b446;
+  --secondary-dark: #219c3a;
+  --secondary-light: #e8f7eb;
+  --success: #28b446;
+  --warning: #ff9b00;
+  --danger: #e74c3c;
+  --dark: #2c3e50;
+  --light: #f8f9fa;
+  --gray-50: #f9fafb;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --gray-900: #0f172a;
+
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.9);
+  --bg-card-hover: rgba(255, 255, 255, 1);
+  --text-primary: #1e293b;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --border-color: rgba(0, 0, 0, 0.1);
+
+  --border-radius: 12px;
+  --border-radius-sm: 8px;
+  --border-radius-lg: 16px;
+
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.15s ease;
+  --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  --gradient: linear-gradient(135deg, #ff9b00 0%, #f90 100%);
+  --gradient-dark: linear-gradient(135deg, #e55a00 0%, #ff6b00 100%);
+  --gradient-secondary: linear-gradient(135deg, #28b446 0%, #219c3a 100%);
+  --gradient-premium: linear-gradient(135deg, #ff9b00 0%, #ff4081 50%, #7c4dff 100%);
+
+  --blur: blur(10px);
+}
+
+body[data-palette='project'].dark-theme {
+  --bg-primary: #1a1f36;
+  --bg-secondary: #121625;
+  --bg-card: rgba(255, 255, 255, 0.08);
+  --bg-card-hover: rgba(255, 255, 255, 0.12);
+  --text-primary: #f8fafc;
+  --text-secondary: #e2e8f0;
+  --text-muted: #94a3b8;
+  --border-color: rgba(255, 255, 255, 0.1);
+
+  --dark: #1a1f36;
+  --light: #f8fafc;
+  --gray-50: #f9fafb;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --gray-900: #0f172a;
+}

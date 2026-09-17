@@ -1,0 +1,27 @@
+@if (statsStore.loading()) {
+  <div class="py-8 text-center" style="color: var(--text-muted)">
+    <i class="fas fa-spinner fa-spin"></i> Загрузка статистики...
+  </div>
+} @else if (currentStats().length > 0) {
+  <div class="stats-grid">
+    @for (stat of currentStats(); track stat.id) {
+      <div class="stat-card">
+        <h3>{{ stat.title }}</h3>
+        <div class="stat-number">{{ stat.value }} {{ stat.valueSuffix }}</div>
+        @if (stat.trend.value) {
+          <div class="stat-trend" [class.trend-up]="stat.trend.type === 'up'" [class.trend-down]="stat.trend.type === 'down'">
+            @if (stat.trend.type === 'up') {
+              <i class="fas fa-arrow-up"></i>
+            }
+            @if (stat.trend.type === 'down') {
+              <i class="fas fa-arrow-down"></i>
+            }
+            {{ stat.trend.prefix }}{{ stat.trend.value }}{{ stat.trend.suffix }} {{ stat.trend.text }}
+          </div>
+        }
+      </div>
+    }
+  </div>
+} @else {
+  <div class="py-8 text-center" style="color: var(--text-muted)">Статистика пока отсутствует</div>
+}

@@ -1,0 +1,84 @@
+<app-header variant="dark" />
+
+<div class="main-container">
+  <app-sidebar />
+
+  <main class="content" [class.collapsed]="sidebarService.isCollapsed()">
+    <div class="workspace-header">
+      <h2><i class="fas fa-th-large"></i> Панель управления</h2>
+      <div class="workspace-actions">
+        <button type="button" class="primary-btn" (click)="openCreate()">
+          <i class="fas fa-plus"></i> Добавить проект
+        </button>
+      </div>
+    </div>
+
+    <app-smart-grid pageKey="project" />
+
+    <div class="table-container">
+      <div class="table-header" style="grid-template-columns: 40px 1fr 90px 110px 110px 120px 90px">
+        <div></div>
+        <div>Название</div>
+        <div>Всего</div>
+        <div>Размещено</div>
+        <div>Заморожено</div>
+        <div>Потрачено</div>
+        <div>Действия</div>
+      </div>
+
+      @if (projectsStore.loading()) {
+        <div class="loading-placeholder"><i class="fas fa-spinner fa-spin"></i> Загрузка...</div>
+      } @else if (projectsStore.projects().length === 0) {
+        <div class="loading-placeholder">Пока нет ни одного проекта — создайте первый.</div>
+      } @else {
+        @for (project of projectsStore.projects(); track project.id) {
+          <div
+            class="table-row"
+            style="grid-template-columns: 40px 1fr 90px 110px 110px 120px 90px; cursor: pointer"
+            (click)="goToProject(project.id, project.name)"
+          >
+            <div><i class="fas fa-folder" style="color: var(--primary)"></i></div>
+            <div class="site-url">{{ project.name }}</div>
+            <div class="metric-value">{{ project.totalNumberOfLinks }}</div>
+            <div class="metric-value">{{ project.numberOfLinksPosted }}</div>
+            <div class="metric-value">{{ project.numberOfFrozenPosted }}</div>
+            <div class="metric-value">{{ project.spentMoney }} ₽</div>
+            <div class="flex gap-2">
+              <button type="button" class="btn-small" title="Редактировать" (click)="openEdit(project.id); $event.stopPropagation()">
+                <i class="fas fa-pencil-alt"></i>
+              </button>
+              <button
+                type="button"
+                class="btn-small"
+                style="background: var(--danger)"
+                title="Удалить"
+                (click)="confirmDelete(project.id); $event.stopPropagation()"
+              >
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    @if (!projectsStore.loading() && projectsStore.projects().length > 0) {
+      <div class="pagination">
+        <div class="pagination-info">
+          Показывать на странице:
+          <select class="pagination-select" [value]="projectsStore.meta().perPage" (change)="onPerPageChange($event)">
+            <option value="15">15</option>
+            <option value="30">30</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+        <app-pagination [meta]="projectsStore.meta()" (pageChange)="changePage($event)" />
+      </div>
+    }
+  </main>
+</div>
+
+@if (modalOpen()) {
+  <app-create-edit-project-modal [projectId]="editId()" (close)="modalOpen.set(false)" />
+}

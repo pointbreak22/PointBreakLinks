@@ -1,0 +1,24 @@
+<app-header />
+
+<main class="flex min-h-screen items-center justify-center px-4 pt-17.5">
+  <div
+    class="w-full max-w-sm rounded-(--border-radius-lg) border p-8 shadow-(--shadow-2xl)"
+    style="background: var(--bg-card); border-color: var(--border-color)"
+  >
+    <h1 class="mb-6 text-center text-2xl font-extrabold" style="color: var(--text-primary)">Смена email</h1>
+
+    @if (confirming()) {
+      <p class="text-center text-sm" style="color: var(--text-secondary)"><i class="fas fa-spinner fa-spin"></i> Подтверждаем...</p>
+    } @else if (errorMessage()) {
+      <p class="text-center text-sm text-red-600" role="alert">{{ errorMessage() }}</p>
+    } @else {
+      <p class="text-center text-sm" style="color: var(--text-secondary)">
+        Email обновлён. Войдите заново, используя новый адрес.
+      </p>
+    }
+
+    <p class="mt-4 text-center text-sm" style="color: var(--text-muted)">
+      <a routerLink="/login" style="color: var(--primary)">Вернуться ко входу</a>
+    </p>
+  </div>
+</main>

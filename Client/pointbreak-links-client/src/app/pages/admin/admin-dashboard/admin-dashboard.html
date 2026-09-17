@@ -1,0 +1,107 @@
+<app-header />
+
+<div class="main-container">
+  <app-sidebar />
+
+  <main class="content">
+    <div class="workspace-header">
+      <h2><i class="fas fa-tachometer-alt"></i> Панель управления</h2>
+    </div>
+
+    @if (adminStore.loading() && !adminStore.dashboard()) {
+      <div class="loading-placeholder"><i class="fas fa-spinner fa-spin"></i> Загрузка статистики...</div>
+    } @else if (adminStore.dashboard(); as stats) {
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Всего пользователей</h3>
+          <div class="stat-number">{{ stats.totalUsers }}</div>
+        </div>
+        <div class="stat-card">
+          <h3>Проектов</h3>
+          <div class="stat-number">{{ stats.totalProjects }}</div>
+        </div>
+        <div class="stat-card">
+          <h3>Активных площадок</h3>
+          <div class="stat-number">{{ stats.totalActiveSites }}</div>
+        </div>
+        <div class="stat-card">
+          <h3>Всего заказов</h3>
+          <div class="stat-number">{{ stats.totalOrders }}</div>
+        </div>
+        <div class="stat-card">
+          <h3>Общий оборот</h3>
+          <div class="stat-number">{{ stats.totalRevenue | number: '1.0-2' }} ₽</div>
+        </div>
+        <a routerLink="/moderation" class="stat-card no-underline" [style.border-left-color]="stats.pendingModerationCount > 0 ? 'var(--danger, #ef4444)' : 'var(--primary)'">
+          <h3>Ожидают модерации</h3>
+          <div class="stat-number">{{ stats.pendingModerationCount }}</div>
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 gap-5 lg:grid-cols-3" style="margin-top: 24px">
+        <div class="table-container" style="padding: 20px">
+          <h3 class="mb-4 text-lg font-semibold" style="color: var(--text-primary)">Пользователи по ролям</h3>
+          @if (stats.usersByRole.length === 0) {
+            <p class="text-sm" style="color: var(--text-muted)">Нет данных.</p>
+          } @else {
+            <div class="flex flex-col gap-3">
+              @for (role of stats.usersByRole; track role.name) {
+                <div>
+                  <div class="mb-1 flex items-center justify-between text-sm">
+                    <span style="color: var(--text-secondary)">{{ role.displayName }}</span>
+                    <span class="font-semibold" style="color: var(--text-primary)">{{ role.count }}</span>
+                  </div>
+                  <div class="h-2 overflow-hidden rounded-full" style="background: var(--bg-card-hover)">
+                    <div
+                      class="h-full rounded-full"
+                      style="background: var(--gradient)"
+                      [style.width.%]="stats.totalUsers > 0 ? (role.count / stats.totalUsers) * 100 : 0"
+                    ></div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="table-container" style="padding: 20px">
+          <h3 class="mb-4 text-lg font-semibold" style="color: var(--text-primary)">Последние регистрации</h3>
+          @if (stats.recentUsers.length === 0) {
+            <p class="text-sm" style="color: var(--text-muted)">Пока никто не регистрировался.</p>
+          } @else {
+            <div class="flex flex-col gap-3">
+              @for (user of stats.recentUsers; track user.id) {
+                <div class="flex items-center justify-between text-sm">
+                  <div>
+                    <div style="color: var(--text-primary)">{{ user.name }}</div>
+                    <div style="color: var(--text-muted); font-size: 12px">{{ user.email }}</div>
+                  </div>
+                  <span style="color: var(--text-muted); font-size: 12px">{{ user.createdAt | date: 'dd.MM.yyyy' }}</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="table-container" style="padding: 20px">
+          <h3 class="mb-4 text-lg font-semibold" style="color: var(--text-primary)">Последние заказы</h3>
+          @if (stats.recentOrders.length === 0) {
+            <p class="text-sm" style="color: var(--text-muted)">Заказов пока не было.</p>
+          } @else {
+            <div class="flex flex-col gap-3">
+              @for (order of stats.recentOrders; track order.id) {
+                <div class="flex items-center justify-between text-sm">
+                  <div>
+                    <div style="color: var(--text-primary)">{{ order.siteUrl }}</div>
+                    <div style="color: var(--text-muted); font-size: 12px">{{ order.buyerName }} · {{ order.statusDescription }}</div>
+                  </div>
+                  <span class="font-semibold" style="color: var(--text-primary)">{{ order.finalPrice | number: '1.0-2' }} ₽</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </main>
+</div>

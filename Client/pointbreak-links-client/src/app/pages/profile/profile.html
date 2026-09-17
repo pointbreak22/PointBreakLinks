@@ -1,0 +1,373 @@
+<app-header />
+
+<main class="mx-auto max-w-2xl px-4 pt-24 pb-12">
+  <h1 class="mb-6 text-2xl font-extrabold" style="color: var(--text-primary)">Профиль</h1>
+
+  <section
+    class="mb-6 rounded-(--border-radius-lg) border p-6 shadow-(--shadow-2xl)"
+    style="background: var(--bg-card); border-color: var(--border-color)"
+  >
+    <h2 class="mb-4 text-lg font-bold" style="color: var(--text-primary)">Данные аккаунта</h2>
+    <p class="text-sm" style="color: var(--text-secondary)">
+      <span class="font-semibold" style="color: var(--text-primary)">Имя:</span> {{ userStore.currentUser()?.name }}
+    </p>
+    <p class="mt-1 text-sm" style="color: var(--text-secondary)">
+      <span class="font-semibold" style="color: var(--text-primary)">Email:</span> {{ userStore.currentUser()?.email }}
+    </p>
+  </section>
+
+  <section
+    class="mb-6 rounded-(--border-radius-lg) border p-6 shadow-(--shadow-2xl)"
+    style="background: var(--bg-card); border-color: var(--border-color)"
+  >
+    <h2 class="mb-4 text-lg font-bold" style="color: var(--text-primary)">Смена email</h2>
+    <p class="mb-4 text-sm" style="color: var(--text-secondary)">
+      На новый адрес придёт письмо со ссылкой для подтверждения — текущий email не изменится, пока вы не перейдёте по ней.
+    </p>
+
+    <form [formGroup]="emailForm" (ngSubmit)="submitEmailChange()" novalidate>
+      <div class="form-group">
+        <label for="newEmail">Новый email</label>
+        <input id="newEmail" type="email" formControlName="newEmail" class="form-control" />
+        @if (emailForm.controls.newEmail.invalid && emailForm.controls.newEmail.touched) {
+          <p class="mt-1 text-sm text-red-600" role="alert">Введите корректный email.</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="currentPasswordForEmail">Текущий пароль</label>
+        <input
+          id="currentPasswordForEmail"
+          type="password"
+          formControlName="currentPasswordForEmail"
+          autocomplete="current-password"
+          class="form-control"
+        />
+        @if (emailForm.controls.currentPasswordForEmail.invalid && emailForm.controls.currentPasswordForEmail.touched) {
+          <p class="mt-1 text-sm text-red-600" role="alert">Введите текущий пароль.</p>
+        }
+      </div>
+
+      @if (emailErrorMessage()) {
+        <p class="mb-4 text-sm text-red-600" role="alert">{{ emailErrorMessage() }}</p>
+      }
+      @if (emailSuccessMessage()) {
+        <p class="mb-4 text-sm" style="color: var(--success)" role="status">{{ emailSuccessMessage() }}</p>
+      }
+
+      <button type="submit" [disabled]="submittingEmail()" class="primary-btn justify-center">
+        {{ submittingEmail() ? 'Отправка...' : 'Сменить email' }}
+      </button>
+    </form>
+  </section>
+
+  <section
+    class="mb-6 rounded-(--border-radius-lg) border p-6 shadow-(--shadow-2xl)"
+    style="background: var(--bg-card); border-color: var(--border-color)"
+  >
+    <h2 class="mb-4 text-lg font-bold" style="color: var(--text-primary)">История входов</h2>
+
+    @if (loginHistory().length === 0) {
+      <p class="text-sm" style="color: var(--text-muted)">Пока нет данных о входах.</p>
+    } @else {
+      <div class="flex flex-col gap-2">
+        @for (entry of loginHistory(); track $index) {
+          <div class="flex items-center justify-between border-b pb-2 text-sm" style="border-color: var(--border-color)">
+            <span style="color: var(--text-primary)">{{ entry.userAgent || 'Неизвестное устройство' }}</span>
+            <span style="color: var(--text-muted)">{{ entry.ipAddress }} · {{ entry.createdAt }}</span>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <section
+    class="mb-6 rounded-(--border-radius-lg) border p-6 shadow-(--shadow-2xl)"
+    style="background: var(--bg-card); border-color: var(--border-color)"
+  >
+    <h2 class="mb-4 text-lg font-bold" style="color: var(--text-primary)">Двухфакторная аутентификация</h2>
+
+    @if (backupCodes(); as codes) {
+      <p class="mb-3 text-sm" style="color: var(--text-secondary)">
+        Сохраните эти коды в надёжном месте. Каждый код можно использовать один раз вместо кода из приложения, если вы
+        потеряете доступ к аутентификатору. Повторно они показаны не будут.
+      </p>
+      <div class="mb-4 grid grid-cols-2 gap-2 rounded-(--border-radius-lg) border p-4 font-mono text-sm" style="border-color: var(--border-color); background: var(--bg-secondary)">
+        @for (code of codes; track code) {
+          <span style="color: var(--text-primary)">{{ code }}</span>
+        }
+      </div>
+      <button type="button" class="primary-btn" (click)="acknowledgeBackupCodes()">Я сохранил эти коды</button>
+    } @else if (twoFactorSecret()) {
+      <p class="mb-3 text-sm" style="color: var(--text-secondary)">
+        Отсканируйте QR-код в приложении-аутентификаторе (Google Authenticator, Authy и т.п.) или введите ключ вручную,
+        затем подтвердите кодом из приложения.
+      </p>
+      @if (twoFactorQrCode()) {
+        <img [src]="twoFactorQrCode()" alt="QR-код для двухфакторной аутентификации" class="mb-3 h-44 w-44" />
+      }
+      <p class="mb-4 font-mono text-sm break-all" style="color: var(--text-primary)">{{ twoFactorSecret() }}</p>
+
+      <div class="form-group">
+        <label for="twoFactorConfirmCode">Код из приложения</label>
+        <input
+          id="twoFactorConfirmCode"
+          type="text"
+          inputmode="numeric"
+          [formControl]="twoFactorConfirmCode"
+          class="form-control"
+          placeholder="000000"
+          maxlength="6"
+        />
+      </div>
+
+      @if (twoFactorError()) {
+        <p class="mb-4 text-sm text-red-600" role="alert">{{ twoFactorError() }}</p>
+      }
+
+      <div class="flex gap-2">
+        <button type="button" class="primary-btn" [disabled]="twoFactorBusy()" (click)="confirmTwoFactorSetup()">
+          {{ twoFactorBusy() ? 'Проверка...' : 'Подтвердить и включить' }}
+        </button>
+        <button type="button" class="secondary-btn" (click)="cancelTwoFactorSetup()">Отмена</button>
+      </div>
+    } @else if (userStore.currentUser()?.twoFactorEnabled) {
+      <p class="mb-4 text-sm" style="color: var(--success)"><i class="fas fa-check-circle"></i> Двухфакторная аутентификация включена.</p>
+
+      @if (backupCodesRemaining(); as remaining) {
+        <p class="mb-2 text-sm" style="color: var(--text-secondary)">Осталось резервных кодов: {{ remaining }}</p>
+      } @else if (backupCodesRemaining() === 0) {
+        <p class="mb-2 text-sm text-red-600" role="alert">Резервные коды закончились — обновите их.</p>
+      }
+
+      @if (regeneratingBackupCodes()) {
+        <div class="form-group">
+          <label for="regenerateBackupCodesPassword">Подтвердите паролем</label>
+          <input
+            id="regenerateBackupCodesPassword"
+            type="password"
+            [formControl]="regenerateBackupCodesPassword"
+            autocomplete="current-password"
+            class="form-control"
+          />
+        </div>
+
+        @if (twoFactorError()) {
+          <p class="mb-4 text-sm text-red-600" role="alert">{{ twoFactorError() }}</p>
+        }
+
+        <div class="mb-4 flex gap-2">
+          <button type="button" class="primary-btn" [disabled]="twoFactorBusy()" (click)="confirmRegenerateBackupCodes()">
+            {{ twoFactorBusy() ? 'Обновление...' : 'Обновить коды' }}
+          </button>
+          <button type="button" class="secondary-btn" (click)="cancelRegenerateBackupCodes()">Отмена</button>
+        </div>
+      } @else {
+        <button type="button" class="secondary-btn mb-4" (click)="startRegenerateBackupCodes()">
+          <i class="fas fa-sync"></i> Обновить резервные коды
+        </button>
+      }
+
+      @if (trustedDevices().length > 0) {
+        <p class="mb-2 text-sm font-semibold" style="color: var(--text-primary)">Доверенные устройства</p>
+        <div class="mb-4 flex flex-col gap-2">
+          @for (device of trustedDevices(); track device.id) {
+            <div class="flex items-center justify-between rounded-(--border-radius-sm) border p-3 text-sm" style="border-color: var(--border-color)">
+              <div>
+                <p style="color: var(--text-primary)">{{ device.label || 'Неизвестное устройство' }}</p>
+                <small style="color: var(--text-muted)">Добавлено {{ device.createdAt }} · истекает {{ device.expiresAt }}</small>
+              </div>
+              <button
+                type="button"
+                class="btn-small"
+                [disabled]="revokingDeviceId() === device.id"
+                (click)="revokeTrustedDevice(device.id)"
+              >
+                <i class="fas fa-times"></i> Отозвать
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      @if (disablingTwoFactor()) {
+        <div class="form-group">
+          <label for="twoFactorDisablePassword">Подтвердите паролем</label>
+          <input
+            id="twoFactorDisablePassword"
+            type="password"
+            [formControl]="twoFactorDisablePassword"
+            autocomplete="current-password"
+            class="form-control"
+          />
+        </div>
+
+        @if (twoFactorError()) {
+          <p class="mb-4 text-sm text-red-600" role="alert">{{ twoFactorError() }}</p>
+        }
+
+        <div class="flex gap-2">
+          <button type="button" class="secondary-btn" [disabled]="twoFactorBusy()" (click)="confirmDisableTwoFactor()" style="border-color: var(--danger, #ef4444); color: var(--danger, #ef4444)">
+            {{ twoFactorBusy() ? 'Отключение...' : 'Отключить' }}
+          </button>
+          <button type="button" class="secondary-btn" (click)="cancelDisableTwoFactor()">Отмена</button>
+        </div>
+      } @else {
+        <button type="button" class="secondary-btn" (click)="startDisableTwoFactor()">Отключить 2FA</button>
+      }
+    } @else {
+      <p class="mb-4 text-sm" style="color: var(--text-secondary)">
+        Защитите вход дополнительным кодом из приложения-аутентификатора.
+      </p>
+      <button type="button" class="primary-btn" [disabled]="twoFactorBusy()" (click)="startTwoFactorSetup()">
+        {{ twoFactorBusy() ? 'Загрузка...' : 'Включить 2FA' }}
+      </button>
+    }
+  </section>
+
+  <section
+    class="mb-6 rounded-(--border-radius-lg) border p-6 shadow-(--shadow-2xl)"
+    style="background: var(--bg-card); border-color: var(--border-color)"
+  >
+    <h2 class="mb-4 text-lg font-bold" style="color: var(--text-primary)">Уведомления на почту</h2>
+    <p class="mb-4 text-sm" style="color: var(--text-secondary)">
+      Отключение здесь не влияет на уведомления в колокольчике — только на письма.
+    </p>
+
+    @if (notificationPreferences(); as prefs) {
+      <label class="mb-3 flex items-center gap-2 text-sm" style="color: var(--text-primary)">
+        <input
+          type="checkbox"
+          [checked]="prefs.emailOnOrderUpdates"
+          [disabled]="savingPreferences()"
+          (change)="toggleNotificationPreference('emailOnOrderUpdates')"
+        />
+        Письма о заказах (новый заказ, принят, отклонён, отменён)
+      </label>
+      <label class="flex items-center gap-2 text-sm" style="color: var(--text-primary)">
+        <input
+          type="checkbox"
+          [checked]="prefs.emailOnDisputeUpdates"
+          [disabled]="savingPreferences()"
+          (change)="toggleNotificationPreference('emailOnDisputeUpdates')"
+        />
+        Письма о спорах по заказам
+      </label>
+    }
+  </section>
+
+  <section
+    class="rounded-(--border-radius-lg) border p-6 shadow-(--shadow-2xl)"
+    style="background: var(--bg-card); border-color: var(--border-color)"
+  >
+    <h2 class="mb-4 text-lg font-bold" style="color: var(--text-primary)">Смена пароля</h2>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="form-group">
+        <label for="currentPassword">Текущий пароль</label>
+        <input
+          id="currentPassword"
+          type="password"
+          formControlName="currentPassword"
+          autocomplete="current-password"
+          class="form-control"
+        />
+        @if (form.controls.currentPassword.invalid && form.controls.currentPassword.touched) {
+          <p class="mt-1 text-sm text-red-600" role="alert">Введите текущий пароль.</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="newPassword">Новый пароль</label>
+        <input
+          id="newPassword"
+          type="password"
+          formControlName="newPassword"
+          autocomplete="new-password"
+          class="form-control"
+        />
+        @if (form.controls.newPassword.invalid && form.controls.newPassword.touched) {
+          <p class="mt-1 text-sm text-red-600" role="alert">Не короче 8 символов, с заглавной буквой и цифрой.</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Повторите новый пароль</label>
+        <input
+          id="confirmPassword"
+          type="password"
+          formControlName="confirmPassword"
+          autocomplete="new-password"
+          class="form-control"
+        />
+        @if (form.errors?.['passwordMismatch'] && form.controls.confirmPassword.touched) {
+          <p class="mt-1 text-sm text-red-600" role="alert">Пароли не совпадают.</p>
+        }
+      </div>
+
+      @if (errorMessage()) {
+        <p class="mb-4 text-sm text-red-600" role="alert">{{ errorMessage() }}</p>
+      }
+      @if (successMessage()) {
+        <p class="mb-4 text-sm" style="color: var(--success)" role="status">{{ successMessage() }}</p>
+      }
+
+      <button type="submit" [disabled]="submitting()" class="primary-btn justify-center">
+        {{ submitting() ? 'Сохранение...' : 'Изменить пароль' }}
+      </button>
+    </form>
+  </section>
+
+  <section
+    class="mt-6 rounded-(--border-radius-lg) border p-6 shadow-(--shadow-2xl)"
+    style="background: var(--bg-card); border-color: var(--danger, #ef4444)"
+  >
+    <h2 class="mb-4 text-lg font-bold" style="color: var(--danger, #ef4444)">Опасная зона</h2>
+
+    @if (deletingAccount()) {
+      <p class="mb-3 text-sm" style="color: var(--text-secondary)">
+        Аккаунт будет деактивирован, вход станет невозможен, все доверенные устройства и двухфакторная аутентификация
+        будут отключены. Подтвердите паролем.
+      </p>
+      <div class="form-group">
+        <label for="deleteAccountPassword">Пароль</label>
+        <input
+          id="deleteAccountPassword"
+          type="password"
+          [formControl]="deleteAccountPassword"
+          autocomplete="current-password"
+          class="form-control"
+        />
+      </div>
+
+      @if (deleteAccountError()) {
+        <p class="mb-4 text-sm text-red-600" role="alert">{{ deleteAccountError() }}</p>
+      }
+
+      <div class="flex gap-2">
+        <button
+          type="button"
+          class="secondary-btn"
+          [disabled]="deleteAccountBusy()"
+          (click)="confirmDeleteAccount()"
+          style="border-color: var(--danger, #ef4444); color: var(--danger, #ef4444)"
+        >
+          {{ deleteAccountBusy() ? 'Удаление...' : 'Удалить аккаунт навсегда' }}
+        </button>
+        <button type="button" class="secondary-btn" (click)="cancelDeleteAccount()">Отмена</button>
+      </div>
+    } @else {
+      <p class="mb-4 text-sm" style="color: var(--text-secondary)">
+        Удаление аккаунта необратимо: вы больше не сможете в него войти.
+      </p>
+      <button
+        type="button"
+        class="secondary-btn"
+        (click)="startDeleteAccount()"
+        style="border-color: var(--danger, #ef4444); color: var(--danger, #ef4444)"
+      >
+        <i class="fas fa-trash"></i> Удалить аккаунт
+      </button>
+    }
+  </section>
+</main>

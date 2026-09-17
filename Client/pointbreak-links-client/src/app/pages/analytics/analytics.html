@@ -1,0 +1,80 @@
+<app-header variant="dark" />
+
+<div class="main-container">
+  <app-sidebar />
+
+  <main class="content" [class.collapsed]="sidebarService.isCollapsed()">
+    <div class="workspace-header">
+      <h2><i class="fas fa-chart-bar"></i> Аналитика</h2>
+    </div>
+
+    @if (loading() && !data()) {
+      <div class="loading-placeholder"><i class="fas fa-spinner fa-spin"></i> Загрузка аналитики...</div>
+    } @else if (data(); as stats) {
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Потрачено (покупка)</h3>
+          <div class="stat-number">{{ stats.totalSpent | number: '1.0-2' }} ₽</div>
+        </div>
+        <div class="stat-card">
+          <h3>Заработано (продажа)</h3>
+          <div class="stat-number">{{ stats.totalEarned | number: '1.0-2' }} ₽</div>
+        </div>
+        <div class="stat-card">
+          <h3>Активных проектов</h3>
+          <div class="stat-number">{{ stats.activeProjects }}</div>
+        </div>
+        <div class="stat-card">
+          <h3>Активных площадок</h3>
+          <div class="stat-number">{{ stats.activeSites }}</div>
+        </div>
+      </div>
+
+      <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div class="rounded-(--border-radius-lg) border p-6" style="background: var(--bg-card); border-color: var(--border-color)">
+          <h3 class="mb-4 font-semibold" style="color: var(--text-primary)">Динамика за 6 месяцев</h3>
+          <div style="height: 280px">
+            @if (spendVsEarnedConfig(); as config) {
+              <app-chart-canvas [config]="config" />
+            }
+          </div>
+        </div>
+
+        <div class="rounded-(--border-radius-lg) border p-6" style="background: var(--bg-card); border-color: var(--border-color)">
+          <h3 class="mb-4 font-semibold" style="color: var(--text-primary)">Заказы по статусам</h3>
+          <div style="height: 280px">
+            @if (statusBreakdownConfig(); as config) {
+              <app-chart-canvas [config]="config" />
+            } @else {
+              <p class="flex h-full items-center justify-center text-sm" style="color: var(--text-muted)">
+                Заказов пока нет — здесь появится разбивка по статусам.
+              </p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 table-container">
+        <div class="table-header" style="grid-template-columns: 1fr 130px 130px 130px">
+          <div>Проект</div>
+          <div>Потрачено</div>
+          <div>Заказов</div>
+          <div>Опубликовано</div>
+        </div>
+
+        @if (stats.projects.length === 0) {
+          <div class="loading-placeholder">Проектов пока нет.</div>
+        } @else {
+          @for (project of stats.projects; track project.id) {
+            <div class="table-row" style="grid-template-columns: 1fr 130px 130px 130px">
+              <div>{{ project.name }}</div>
+              <div>{{ project.spent | number: '1.0-2' }} ₽</div>
+              <div>{{ project.ordersCount }}</div>
+              <div>{{ project.linksPosted }}</div>
+            </div>
+          }
+        }
+      </div>
+    }
+  </main>
+</div>

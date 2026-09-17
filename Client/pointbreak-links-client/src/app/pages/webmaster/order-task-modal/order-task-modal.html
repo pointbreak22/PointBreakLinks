@@ -1,0 +1,96 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div class="modal-content" style="max-width: 700px" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fas fa-tasks"></i> Задание: {{ order().site.url }}</h3>
+      <button type="button" class="modal-close" (click)="close.emit()" aria-label="Закрыть">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="mb-6">
+        <h4 class="mb-3 font-semibold" style="color: var(--text-primary)"><i class="fas fa-link"></i> Ссылки для размещения</h4>
+
+        @if (order().links.length > 0) {
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left" style="color: var(--text-muted)">
+                <th class="pb-2">Запрос</th>
+                <th class="pb-2">Ссылка</th>
+                <th class="pb-2">Действие</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (link of order().links; track link.url) {
+                <tr class="border-t" style="border-color: var(--border-color)">
+                  <td class="py-2" style="color: var(--text-primary)">{{ link.query }}</td>
+                  <td class="py-2" style="color: var(--text-secondary)">{{ link.url }}</td>
+                  <td class="py-2">
+                    <button type="button" class="btn-small" (click)="copyToClipboard(link.url)">
+                      <i class="fas fa-copy"></i> Копировать
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <button type="button" class="secondary-btn mt-3" (click)="copyAllLinks()">
+            <i class="fas fa-copy"></i> Копировать все ссылки
+          </button>
+        } @else {
+          <p style="color: var(--text-muted)">Ссылки ещё не указаны.</p>
+        }
+      </div>
+
+      <div class="mb-6">
+        <h4 class="mb-3 font-semibold" style="color: var(--text-primary)"><i class="fas fa-file-alt"></i> Описание задания</h4>
+        <p style="color: var(--text-secondary)">{{ order().taskDescription || 'Описание задания отсутствует' }}</p>
+      </div>
+
+      <div class="mb-6">
+        <h4 class="mb-3 font-semibold" style="color: var(--text-primary)"><i class="fas fa-newspaper"></i> Статья</h4>
+        <div class="flex items-center gap-3">
+          <i class="fas text-xl" [class]="statusIcon()" style="color: var(--primary)"></i>
+          <div>
+            <p style="color: var(--text-primary)">{{ articleStatus() }}</p>
+            <small style="color: var(--text-muted)">Статус написания статьи</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-6 flex items-center justify-between rounded-(--border-radius) border p-4" style="border-color: var(--border-color); background: var(--bg-card)">
+        <p style="color: var(--text-secondary)">Стоимость написания + размещения:</p>
+        <div class="text-xl font-bold" style="color: var(--text-primary)">{{ order().priceFinal }} ₽</div>
+      </div>
+
+      <app-purchased-site-timeline [purchasedSiteId]="order().id" />
+    </div>
+
+    <div class="modal-footer">
+      @if (isPending()) {
+        <button type="button" class="secondary-btn" (click)="reject.emit(order().id)" [disabled]="submitting()">
+          <i class="fas fa-times"></i> Отклонить
+        </button>
+        <button type="button" class="primary-btn" (click)="handleAccept()" [disabled]="submitting()">
+          @if (submitting()) {
+            <i class="fas fa-spinner fa-spin"></i>
+          } @else {
+            <i class="fas fa-check"></i>
+          }
+          {{ submitting() ? 'Обработка...' : 'Принять задание' }}
+        </button>
+      } @else if (isAcceptedNotPublished()) {
+        <button type="button" class="primary-btn" (click)="handleConfirmPublish()" [disabled]="submitting()">
+          @if (submitting()) {
+            <i class="fas fa-spinner fa-spin"></i>
+          } @else {
+            <i class="fas fa-newspaper"></i>
+          }
+          {{ submitting() ? 'Обработка...' : 'Подтвердить публикацию' }}
+        </button>
+      } @else {
+        <button type="button" class="secondary-btn" (click)="close.emit()">Закрыть</button>
+      }
+    </div>
+  </div>
+</div>

@@ -1,0 +1,121 @@
+<app-header />
+
+<div class="main-container">
+  <app-sidebar />
+
+  <main class="content">
+    <div class="workspace-header">
+      <h2><i class="fas fa-clipboard-check"></i> Модерация площадок</h2>
+    </div>
+
+    @if (moderationStore.selectedIds().size > 0) {
+      <div class="mb-4 rounded-(--border-radius-lg) border p-3" style="background: var(--bg-card); border-color: var(--border-color)">
+        @if (rejectingId() === 'bulk') {
+          <div class="flex flex-wrap items-center gap-2">
+            <input
+              type="text"
+              class="form-control"
+              style="max-width: 320px"
+              placeholder="Причина отклонения (необязательно)"
+              [value]="rejectReason()"
+              (input)="rejectReason.set($any($event.target).value)"
+            />
+            <button type="button" class="btn-small" style="background: var(--danger)" (click)="confirmReject()">
+              Подтвердить отклонение ({{ moderationStore.selectedIds().size }})
+            </button>
+            <button type="button" class="btn-small" (click)="cancelReject()">Отмена</button>
+          </div>
+        } @else {
+          <div class="flex items-center gap-3">
+            <span class="text-sm" style="color: var(--text-secondary)">Выбрано: {{ moderationStore.selectedIds().size }}</span>
+            <button type="button" class="btn-small" [disabled]="moderationStore.bulkBusy()" (click)="bulkApprove()">
+              <i class="fas fa-check"></i> Одобрить выбранные ({{ moderationStore.selectedIds().size }})
+            </button>
+            <button
+              type="button"
+              class="btn-small"
+              style="background: var(--danger)"
+              [disabled]="moderationStore.bulkBusy()"
+              (click)="startBulkReject()"
+            >
+              <i class="fas fa-times"></i> Отклонить выбранные ({{ moderationStore.selectedIds().size }})
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    <div class="table-container">
+      <div class="table-header" style="grid-template-columns: 40px 1fr 140px 100px 90px 160px 130px 190px">
+        <div>
+          <input
+            type="checkbox"
+            [checked]="moderationStore.sites().length > 0 && moderationStore.selectedIds().size === moderationStore.sites().length"
+            (change)="toggleSelectAll()"
+            aria-label="Выбрать все"
+          />
+        </div>
+        <div>URL</div>
+        <div>Продавец</div>
+        <div>Тематика</div>
+        <div>ИКС</div>
+        <div>Цена</div>
+        <div>Подана</div>
+        <div>Действия</div>
+      </div>
+
+      @if (moderationStore.loading()) {
+        <div class="loading-placeholder"><i class="fas fa-spinner fa-spin"></i> Загрузка данных...</div>
+      } @else if (moderationStore.sites().length === 0) {
+        <div class="loading-placeholder">Нет площадок на проверке.</div>
+      } @else {
+        @for (site of moderationStore.sites(); track site.id) {
+          <div class="table-row" style="grid-template-columns: 40px 1fr 140px 100px 90px 160px 130px 190px">
+            <div>
+              <input
+                type="checkbox"
+                [checked]="moderationStore.selectedIds().has(site.id)"
+                (change)="toggleSelected(site.id)"
+                [attr.aria-label]="'Выбрать ' + site.url"
+              />
+            </div>
+            <div class="site-info"><div class="site-url">{{ site.url }}</div></div>
+            <div>{{ site.sellerName }}</div>
+            <div>{{ site.topic }}</div>
+            <div>{{ site.iks }}</div>
+            <div><span class="price">{{ site.price | number: '1.0-2' }} ₽</span></div>
+            <div><span class="date">{{ site.createdAt }}</span></div>
+            @if (rejectingId() === site.id) {
+              <div class="flex flex-col gap-2">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Причина (необязательно)"
+                  [value]="rejectReason()"
+                  (input)="rejectReason.set($any($event.target).value)"
+                />
+                <div class="flex gap-2">
+                  <button type="button" class="btn-small" style="background: var(--danger)" (click)="confirmReject()">
+                    Подтвердить
+                  </button>
+                  <button type="button" class="btn-small" (click)="cancelReject()">Отмена</button>
+                </div>
+              </div>
+            } @else {
+              <div class="flex gap-2">
+                <button type="button" class="btn-small" (click)="approve(site.id)">
+                  <i class="fas fa-check"></i> Одобрить
+                </button>
+                <button type="button" class="btn-small" style="background: var(--danger)" (click)="startReject(site.id)">
+                  <i class="fas fa-times"></i> Отклонить
+                </button>
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+
+    <app-pagination [meta]="moderationStore.meta()" (pageChange)="changePage($event)" />
+  </main>
+</div>

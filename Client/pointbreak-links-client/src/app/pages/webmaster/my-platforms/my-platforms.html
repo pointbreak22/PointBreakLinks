@@ -1,0 +1,140 @@
+<div class="workspace-header">
+  <h2><i class="fas fa-store"></i> Продажа ссылок</h2>
+</div>
+
+<app-smart-grid pageKey="webmaster" />
+
+<div class="sites-container">
+  <div class="flex flex-wrap items-center justify-between gap-3" style="margin-bottom: 20px">
+    <h3 class="text-xl font-semibold" style="color: var(--text-primary)">Мои площадки для продажи ссылок</h3>
+    <button type="button" class="primary-btn" (click)="openCreate()">
+      <i class="fas fa-plus"></i> Добавить площадку
+    </button>
+  </div>
+
+  <div class="table-container">
+    <div class="table-header" style="grid-template-columns: 1fr 90px 70px 110px 140px 90px 155px 160px">
+      <div>URL</div>
+      <div>ИКС</div>
+      <div>DR</div>
+      <div>Цена</div>
+      <div>Статус</div>
+      <div>Продано</div>
+      <div>Владение</div>
+      <div>Действия</div>
+    </div>
+
+    @if (sitesStore.loading()) {
+      <div class="loading-placeholder"><i class="fas fa-spinner fa-spin"></i> Загрузка данных...</div>
+    } @else if (sitesStore.sites().length === 0) {
+      <div class="loading-placeholder">Пока нет ни одной площадки — добавьте первую.</div>
+    } @else {
+      @for (site of sitesStore.sites(); track site.id) {
+        <div class="table-row" style="grid-template-columns: 1fr 90px 70px 110px 140px 90px 155px 160px">
+          <div class="site-info">
+            <div class="site-url">
+              {{ site.url }}
+              @if (site.hasScreenshot) {
+                <a [href]="screenshotUrl(site.id)" target="_blank" rel="noopener" title="Открыть скриншот площадки" style="color: var(--text-muted)">
+                  <i class="fas fa-image"></i>
+                </a>
+              }
+            </div>
+            @if (site.reviewsCount > 0) {
+              <button
+                type="button"
+                class="text-muted"
+                style="font-size: 12px; background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline"
+                (click)="openReviews(site)"
+              >
+                <i class="fas fa-star" style="color: #f5a623"></i> {{ site.averageRating }} ({{ site.reviewsCount }})
+              </button>
+            }
+          </div>
+          <div>{{ site.iks }}</div>
+          <div>{{ site.dr }}</div>
+          <div>{{ site.price | number: '1.0-2' }} ₽</div>
+          <div>
+            <span class="status" [class]="site.status.name">{{ site.status.description }}</span>
+            @if (site.status.name === 'active' && !site.isActive) {
+              <div class="text-muted mt-1 text-sm">Приостановлена</div>
+            }
+          </div>
+          <div>{{ site.soldCount }}</div>
+          <div>
+            @if (site.isVerified) {
+              <span class="status active"><i class="fas fa-check-circle"></i> Подтверждена</span>
+            } @else if (site.userIdSales === userStore.currentUser()?.id) {
+              <div class="inline-flex items-stretch overflow-hidden rounded-(--border-radius-sm)">
+                <button
+                  type="button"
+                  class="btn-small"
+                  style="border-radius: 0"
+                  [disabled]="verifyingId() === site.id"
+                  (click)="verify(site.id)"
+                >
+                  @if (verifyingId() === site.id) {
+                    <i class="fas fa-spinner fa-spin"></i>
+                  } @else {
+                    <i class="fas fa-shield-alt"></i>
+                  }
+                  Проверить
+                </button>
+                <button
+                  type="button"
+                  class="flex items-center justify-center px-2 text-white"
+                  style="background: var(--gradient-dark); border: none; border-left: 1px solid rgba(255, 255, 255, 0.3); cursor: pointer; font-size: 11px"
+                  (click)="toggleInstructions(site.id)"
+                  aria-label="Как подтвердить?"
+                >
+                  <i class="fas fa-question-circle"></i>
+                </button>
+              </div>
+            }
+          </div>
+          <div class="flex flex-col items-start gap-1">
+            @if (site.userIdSales === userStore.currentUser()?.id) {
+              <button type="button" class="btn-small" (click)="openEdit(site.id)">
+                <i class="fas fa-edit"></i> Редактировать
+              </button>
+              @if (site.status.name === 'active') {
+                <button type="button" class="btn-small" [disabled]="pausingId() === site.id" (click)="togglePause(site)">
+                  @if (pausingId() === site.id) {
+                    <i class="fas fa-spinner fa-spin"></i>
+                  } @else if (site.isActive) {
+                    <i class="fas fa-pause"></i>
+                  } @else {
+                    <i class="fas fa-play"></i>
+                  }
+                  {{ site.isActive ? 'Приостановить' : 'Возобновить' }}
+                </button>
+              }
+            } @else {
+              <span class="text-muted">Чужая площадка</span>
+            }
+          </div>
+        </div>
+
+        @if (instructionsSiteId() === site.id) {
+          <div class="table-row" style="grid-template-columns: 1fr">
+            <div class="text-muted" style="font-size: 13px; line-height: 1.6">
+              Разместите на главной странице {{ site.url }} мета-тег
+              <code>&lt;meta name="pointbreaklinks-verification" content="{{ site.verificationToken }}"&gt;</code>
+              или просто добавьте этот код в любое место страницы, затем нажмите «Проверить».
+            </div>
+          </div>
+        }
+      }
+    }
+  </div>
+
+  <app-pagination [meta]="sitesStore.meta()" (pageChange)="changePage($event)" />
+</div>
+
+@if (modalOpen()) {
+  <app-add-edit-site-modal [siteId]="editingSiteId()" (close)="modalOpen.set(false)" (saved)="onSaved()" />
+}
+
+@if (reviewsSite(); as site) {
+  <app-site-reviews-modal [siteId]="site.id" [siteUrl]="site.url" [canReply]="true" (close)="closeReviews()" />
+}

@@ -1,0 +1,76 @@
+<div class="workspace-header">
+  <h2><i class="fas fa-shopping-cart"></i> Мои продажи</h2>
+</div>
+
+<app-smart-grid pageKey="webmaster" />
+
+<div class="sales-container">
+  <div class="flex flex-wrap items-center justify-between gap-3" style="margin-bottom: 20px">
+    <h3 class="text-xl font-semibold" style="color: var(--text-primary)">Мои продажи — поступающие заказы</h3>
+    <div class="flex items-center gap-2">
+      <button type="button" class="secondary-btn" [disabled]="exporting()" (click)="exportCsv()">
+        <i class="fas fa-file-csv"></i> Экспорт в CSV
+      </button>
+      <button type="button" class="secondary-btn" (click)="sitesStore.fetchSales()">
+        <i class="fas fa-sync-alt"></i> Обновить
+      </button>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <div class="table-header" style="grid-template-columns: 1fr 110px 1fr 130px 100px 1fr 70px">
+      <div>Задание</div>
+      <div>Цена</div>
+      <div>Площадка</div>
+      <div>Статус</div>
+      <div>Дата</div>
+      <div>Оптимизатор</div>
+      <div>Чат</div>
+    </div>
+
+    @if (sitesStore.loading()) {
+      <div class="loading-placeholder">Загрузка заказов...</div>
+    } @else if (sitesStore.purchasedSites().length === 0) {
+      <div class="loading-placeholder">Заказов пока нет — они появятся здесь, когда оптимизатор купит размещение.</div>
+    } @else {
+      @for (order of sitesStore.purchasedSites(); track order.id) {
+        <div class="table-row" style="grid-template-columns: 1fr 110px 1fr 130px 100px 1fr 70px" (click)="openTask(order)">
+          <div class="site-info">
+            <div class="site-url" [title]="order.taskDescription ?? ''">
+              {{ truncate(order.taskDescription, 30) || 'Без описания' }}
+            </div>
+          </div>
+          <div><span class="price">{{ order.priceFinal | number: '1.0-2' }} ₽</span></div>
+          <div>{{ order.site.url }}</div>
+          <div><span class="status" [class]="getOrderStatusLabel(order).cssClass">{{ getOrderStatusLabel(order).text }}</span></div>
+          <div class="date">{{ order.updatedAt }}</div>
+          <div [title]="'ID покупателя: ' + order.buyer.id">{{ order.buyer.name }}</div>
+          <div>
+            <button type="button" class="btn-small" (click)="openChat(order); $event.stopPropagation()">
+              <i class="fas fa-envelope"></i>
+              @if (order.lastMessage?.isUnread) {
+                <span class="ml-1 inline-block h-2 w-2 rounded-full bg-red-500"></span>
+              }
+            </button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  <app-pagination [meta]="sitesStore.meta()" (pageChange)="changePage($event)" />
+</div>
+
+@if (taskModalOrder(); as order) {
+  <app-order-task-modal
+    [order]="order"
+    (close)="closeTask()"
+    (accept)="acceptOrder($event)"
+    (reject)="rejectOrder($event)"
+    (confirmPublish)="confirmPublish($event)"
+  />
+}
+
+@if (chatModalOrder(); as order) {
+  <app-message-chat-modal [order]="order" (close)="closeChat()" />
+}

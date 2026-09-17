@@ -1,0 +1,41 @@
+<app-header />
+
+<div class="main-container">
+  <app-sidebar />
+
+  <main class="content">
+    <div class="workspace-header">
+      <h2><i class="fas fa-exchange-alt"></i> Транзакции</h2>
+    </div>
+
+    <div class="table-container">
+      <div class="table-header" style="grid-template-columns: 1fr 130px 110px 1fr 150px">
+        <div>Пользователь</div>
+        <div>Тип</div>
+        <div>Сумма</div>
+        <div>Описание</div>
+        <div>Дата</div>
+      </div>
+
+      @if (adminStore.transactionsLoading()) {
+        <div class="loading-placeholder"><i class="fas fa-spinner fa-spin"></i> Загрузка данных...</div>
+      } @else if (adminStore.transactions().length === 0) {
+        <div class="loading-placeholder">Транзакции не найдены.</div>
+      } @else {
+        @for (transaction of adminStore.transactions(); track transaction.id) {
+          <div class="table-row" style="grid-template-columns: 1fr 130px 110px 1fr 150px">
+            <div>{{ transaction.userName }}</div>
+            <div>{{ typeLabel(transaction.type) }}</div>
+            <div [style.color]="transaction.amount < 0 ? 'var(--danger, #ef4444)' : 'var(--success)'">
+              {{ transaction.amount > 0 ? '+' : '' }}{{ transaction.amount }} ₽
+            </div>
+            <div class="text-muted">{{ transaction.description }}</div>
+            <div><span class="date">{{ transaction.createdAt }}</span></div>
+          </div>
+        }
+      }
+    </div>
+
+    <app-pagination [meta]="adminStore.transactionsMeta()" (pageChange)="changePage($event)" />
+  </main>
+</div>

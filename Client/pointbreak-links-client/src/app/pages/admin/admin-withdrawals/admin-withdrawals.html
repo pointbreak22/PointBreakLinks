@@ -1,0 +1,97 @@
+<app-header />
+
+<div class="main-container">
+  <app-sidebar />
+
+  <main class="content">
+    <div class="workspace-header">
+      <h2><i class="fas fa-money-bill-wave"></i> Заявки на вывод средств</h2>
+      <div class="workspace-actions">
+        <button type="button" class="secondary-btn" [disabled]="exporting()" (click)="exportCsv()">
+          @if (exporting()) {
+            <i class="fas fa-spinner fa-spin"></i>
+          } @else {
+            <i class="fas fa-file-csv"></i>
+          }
+          Экспорт в CSV
+        </button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <div class="table-header" style="grid-template-columns: 1fr 130px 1fr 130px 220px">
+        <div>Пользователь</div>
+        <div>Сумма</div>
+        <div>Реквизиты</div>
+        <div>Подана</div>
+        <div>Решение</div>
+      </div>
+
+      @if (adminStore.withdrawalsLoading()) {
+        <div class="loading-placeholder"><i class="fas fa-spinner fa-spin"></i> Загрузка данных...</div>
+      } @else if (adminStore.withdrawals().length === 0) {
+        <div class="loading-placeholder">Открытых заявок на вывод нет.</div>
+      } @else {
+        @for (request of adminStore.withdrawals(); track request.id) {
+          <div class="table-row" style="grid-template-columns: 1fr 130px 1fr 130px 220px">
+            <div>
+              <div class="site-url">{{ request.userName }}</div>
+              <div class="text-muted">{{ request.userEmail }}</div>
+            </div>
+            <div>{{ request.amount }} ₽</div>
+            <div class="text-muted">{{ request.payoutDetails }}</div>
+            <div><span class="date">{{ request.requestedAt }}</span></div>
+            <div class="flex gap-2">
+              <button
+                type="button"
+                class="btn-small"
+                [disabled]="processingId() === request.id"
+                (click)="approve(request.id)"
+              >
+                <i class="fas fa-check"></i> Одобрить
+              </button>
+              <button
+                type="button"
+                class="btn-small"
+                style="background: var(--bg-secondary); color: var(--text-primary)"
+                [disabled]="processingId() === request.id"
+                (click)="toggleReject(request.id)"
+              >
+                <i class="fas fa-times"></i> Отклонить
+              </button>
+            </div>
+          </div>
+
+          @if (rejectingId() === request.id) {
+            <div class="table-row" style="grid-template-columns: 1fr">
+              <div class="flex flex-col gap-2 p-4" style="background: var(--bg-card)">
+                <label for="reject-comment-{{ request.id }}" class="text-sm font-medium" style="color: var(--text-primary)">
+                  Причина отклонения (необязательно, попадёт в письмо пользователю)
+                </label>
+                <textarea
+                  id="reject-comment-{{ request.id }}"
+                  class="form-control"
+                  rows="2"
+                  (input)="onRejectCommentInput($event)"
+                ></textarea>
+                <div class="flex gap-2">
+                  <button
+                    type="button"
+                    class="primary-btn"
+                    [disabled]="processingId() === request.id"
+                    (click)="confirmReject(request.id)"
+                  >
+                    Подтвердить отклонение
+                  </button>
+                  <button type="button" class="secondary-btn" (click)="toggleReject(request.id)">Отмена</button>
+                </div>
+              </div>
+            </div>
+          }
+        }
+      }
+    </div>
+
+    <app-pagination [meta]="adminStore.withdrawalsMeta()" (pageChange)="changePage($event)" />
+  </main>
+</div>

@@ -1,0 +1,182 @@
+<app-header />
+
+<div class="main-container">
+  <app-sidebar />
+
+  <main class="content" [class.collapsed]="sidebarService.isCollapsed()">
+    <div class="workspace-header">
+      <h2><i class="fas fa-shield-alt"></i> Настройки безопасности системы</h2>
+      <div class="workspace-actions">
+        <button type="button" class="primary-btn" (click)="notifyUnavailable()">
+          <i class="fas fa-save"></i> Сохранить настройки
+        </button>
+      </div>
+    </div>
+
+    <div
+      class="mb-6 flex items-start gap-3 rounded-(--border-radius) border p-4 text-sm"
+      style="background: var(--bg-card); border-color: var(--warning); color: var(--text-secondary)"
+    >
+      <i class="fas fa-info-circle mt-0.5" style="color: var(--warning)"></i>
+      <p>
+        Эти параметры нигде не сохраняются — в приложении нет таблицы системных настроек. Элементы ниже
+        отключены и не отражают реальное состояние системы.
+      </p>
+    </div>
+
+    <div class="system-settings">
+      <div class="settings-group">
+        <h3>Аутентификация и доступ</h3>
+        <div class="settings-row">
+          <div class="setting-item">
+            <label>Требовать подтверждение email</label>
+            <label class="toggle-switch">
+              <input type="checkbox" disabled />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="setting-item">
+            <label>Двухфакторная аутентификация</label>
+            <label class="toggle-switch">
+              <input type="checkbox" disabled />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="setting-item">
+            <label>Максимальное количество попыток входа</label>
+            <input type="number" class="form-control" placeholder="—" disabled />
+          </div>
+          <div class="setting-item">
+            <label>Блокировка при превышении (минут)</label>
+            <input type="number" class="form-control" placeholder="—" disabled />
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3>Политика паролей</h3>
+        <div class="settings-row">
+          <div class="setting-item">
+            <label>Минимальная длина пароля</label>
+            <input type="number" class="form-control" placeholder="—" disabled />
+          </div>
+          <div class="setting-item">
+            <label>Требовать специальные символы</label>
+            <label class="toggle-switch">
+              <input type="checkbox" disabled />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="setting-item">
+            <label>Срок действия пароля (дней)</label>
+            <input type="number" class="form-control" placeholder="—" disabled />
+          </div>
+          <div class="setting-item">
+            <label>Запрещать повторение паролей</label>
+            <label class="toggle-switch">
+              <input type="checkbox" disabled />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3>Защита от атак</h3>
+        <div class="settings-row">
+          <div class="setting-item">
+            <label>Защита от CSRF атак</label>
+            <label class="toggle-switch">
+              <input type="checkbox" disabled />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="setting-item">
+            <label>Защита от XSS атак</label>
+            <label class="toggle-switch">
+              <input type="checkbox" disabled />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="setting-item">
+            <label>Ограничение запросов в секунду</label>
+            <input type="number" class="form-control" placeholder="—" disabled />
+          </div>
+          <div class="setting-item">
+            <label>Блокировка подозрительных IP</label>
+            <label class="toggle-switch">
+              <input type="checkbox" disabled />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3>SSL и шифрование</h3>
+        <div class="settings-row">
+          <div class="setting-item">
+            <label>Принудительное HTTPS</label>
+            <label class="toggle-switch">
+              <input type="checkbox" disabled />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="setting-item">
+            <label>HSTS заголовок</label>
+            <label class="toggle-switch">
+              <input type="checkbox" disabled />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="setting-item">
+            <label>Алгоритм шифрования</label>
+            <select class="form-control" disabled>
+              <option>—</option>
+            </select>
+          </div>
+          <div class="setting-item">
+            <label>Срок действия SSL сертификата</label>
+            <input type="text" class="form-control" placeholder="—" readonly disabled />
+          </div>
+        </div>
+      </div>
+
+      <div class="danger-zone">
+        <h3>Опасные операции</h3>
+        <p>Эти действия влияют на безопасность всей системы. Будьте осторожны.</p>
+        <div class="workspace-actions" style="margin-top: 20px">
+          <button type="button" class="secondary-btn" disabled style="background: var(--warning); color: white">
+            <i class="fas fa-key"></i> Сбросить все сессии
+          </button>
+          <button type="button" class="secondary-btn" disabled style="background: var(--danger); color: white">
+            <i class="fas fa-ban"></i> Заблокировать всех пользователей
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid" style="margin-top: 30px">
+      <div class="stat-card">
+        <h3>Попыток входа за 24ч</h3>
+        <div class="stat-number">—</div>
+      </div>
+      <div class="stat-card">
+        <h3>Заблокированных IP</h3>
+        <div class="stat-number">—</div>
+      </div>
+      <div class="stat-card">
+        <h3>Обнаружено угроз</h3>
+        <div class="stat-number">—</div>
+      </div>
+    </div>
+  </main>
+</div>

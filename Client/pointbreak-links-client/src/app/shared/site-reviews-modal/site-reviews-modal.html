@@ -1,0 +1,72 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div class="modal-content flex max-h-[80vh] flex-col" style="max-width: 500px" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Отзывы о {{ siteUrl() }}</h3>
+      <button type="button" class="modal-close" (click)="close.emit()" aria-label="Закрыть">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="flex-1 space-y-4 overflow-y-auto px-6 py-4">
+      @if (loading()) {
+        <p class="text-center text-sm" style="color: var(--text-muted)"><i class="fas fa-spinner fa-spin"></i> Загрузка отзывов...</p>
+      } @else if (reviews().length === 0) {
+        <p class="text-center text-sm" style="color: var(--text-muted)">Отзывов пока нет.</p>
+      } @else {
+        @for (review of reviews(); track review.id) {
+          <div class="border-b pb-4 last:border-b-0" style="border-color: var(--border-color)">
+            <div class="mb-1 flex items-center justify-between">
+              <span class="font-semibold" style="color: var(--text-primary)">{{ review.buyerName }}</span>
+              <span class="text-xs" style="color: var(--text-muted)">{{ review.createdAt }}</span>
+            </div>
+            <div class="mb-2 flex gap-0.5" style="font-size: 14px">
+              @for (star of stars; track star) {
+                <i class="fas fa-star" [style.color]="star <= review.rating ? '#f5a623' : 'var(--border-color)'"></i>
+              }
+            </div>
+            @if (review.comment) {
+              <p class="text-sm" style="color: var(--text-secondary)">{{ review.comment }}</p>
+            }
+
+            @if (review.sellerReply && replyingId() !== review.id) {
+              <div class="mt-2 rounded-(--border-radius-sm) border-l-4 pl-3 text-sm" style="border-color: var(--primary); background: var(--bg-secondary)">
+                <p class="font-semibold" style="color: var(--text-primary)">Ответ продавца:</p>
+                <p style="color: var(--text-secondary)">{{ review.sellerReply }}</p>
+              </div>
+            }
+
+            @if (canReply()) {
+              @if (replyingId() === review.id) {
+                <div class="mt-2">
+                  <textarea
+                    class="form-control"
+                    rows="2"
+                    [value]="replyText()"
+                    (input)="replyText.set($any($event.target).value)"
+                    placeholder="Ваш ответ на отзыв..."
+                  ></textarea>
+                  <div class="mt-2 flex gap-2">
+                    <button type="button" class="btn-small" [disabled]="replyBusy()" (click)="submitReply(review.id)">
+                      {{ replyBusy() ? 'Отправка...' : 'Отправить' }}
+                    </button>
+                    <button type="button" class="btn-small" (click)="cancelReply()">Отмена</button>
+                  </div>
+                </div>
+              } @else {
+                <button type="button" class="btn-small mt-2" (click)="startReply(review)">
+                  {{ review.sellerReply ? 'Изменить ответ' : 'Ответить' }}
+                </button>
+              }
+            }
+          </div>
+        }
+      }
+    </div>
+
+    @if (meta().lastPage > 1) {
+      <div class="border-t px-6 py-3" style="border-color: var(--border-color)">
+        <app-pagination [meta]="meta()" (pageChange)="load($event)" />
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,95 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>
+        <i class="fas" [class.fa-edit]="isEdit()" [class.fa-plus-circle]="!isEdit()"></i>
+        {{ isEdit() ? 'Редактировать площадку' : 'Добавление площадки' }}
+      </h3>
+      <button type="button" class="modal-close" (click)="close.emit()" aria-label="Закрыть">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="modal-body">
+        @if (loading() && isEdit()) {
+          <div class="p-4 text-center"><i class="fas fa-spinner fa-spin"></i> Загрузка данных...</div>
+        } @else {
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="form-group">
+              <label for="site-url">URL сайта</label>
+              <input id="site-url" type="text" formControlName="url" class="form-control" placeholder="example.com" />
+            </div>
+            <div class="form-group">
+              <label for="site-topic">Тематика</label>
+              <select id="site-topic" formControlName="topicId" class="form-control">
+                @for (topic of topics(); track topic.id) {
+                  <option [value]="topic.id">{{ topic.name }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="site-description">Описание сайта</label>
+            <textarea
+              id="site-description"
+              formControlName="description"
+              class="form-control"
+              rows="3"
+              placeholder="Введите описание площадки..."
+            ></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="form-group">
+              <label for="site-price">Цена размещения (₽)</label>
+              <input id="site-price" type="number" formControlName="price" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label for="site-iks">ИКС</label>
+              <input id="site-iks" type="number" formControlName="iks" class="form-control" />
+            </div>
+          </div>
+
+          @if (isEdit()) {
+            <div class="form-group">
+              <label>Скриншот площадки</label>
+              @if (hasScreenshot()) {
+                <img [src]="screenshotUrl()" alt="Скриншот площадки" class="mb-2 max-h-40 rounded-(--border-radius-sm) border" style="border-color: var(--border-color)" />
+                <div class="flex gap-2">
+                  <label class="secondary-btn" style="cursor: pointer" [class.opacity-50]="uploadingScreenshot()">
+                    <i class="fas fa-upload"></i> Заменить
+                    <input type="file" accept="image/jpeg,image/png,image/webp" hidden [disabled]="uploadingScreenshot()" (change)="onScreenshotSelected($event)" />
+                  </label>
+                  <button type="button" class="secondary-btn" style="border-color: var(--danger, #ef4444); color: var(--danger, #ef4444)" (click)="removeScreenshot()">
+                    <i class="fas fa-trash"></i> Удалить
+                  </button>
+                </div>
+              } @else {
+                <label class="secondary-btn" style="cursor: pointer; width: fit-content" [class.opacity-50]="uploadingScreenshot()">
+                  @if (uploadingScreenshot()) {
+                    <i class="fas fa-spinner fa-spin"></i> Загрузка...
+                  } @else {
+                    <i class="fas fa-upload"></i> Загрузить скриншот
+                  }
+                  <input type="file" accept="image/jpeg,image/png,image/webp" hidden [disabled]="uploadingScreenshot()" (change)="onScreenshotSelected($event)" />
+                </label>
+              }
+            </div>
+          }
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="secondary-btn" (click)="close.emit()">Отмена</button>
+        <button type="submit" class="primary-btn" [disabled]="loading()">
+          @if (loading()) {
+            <i class="fas fa-spinner fa-spin"></i>
+          }
+          {{ isEdit() ? 'Сохранить изменения' : 'Добавить площадку' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

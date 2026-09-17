@@ -1,0 +1,84 @@
+<app-header />
+
+<div class="main-container">
+  <app-sidebar />
+
+  <main class="content" [class.collapsed]="sidebarService.isCollapsed()">
+    <div class="workspace-header">
+      <h2><i class="fas fa-chart-line"></i> Мониторинг позиций</h2>
+    </div>
+
+    <div
+      class="mb-6 flex items-start gap-3 rounded-(--border-radius) border p-4 text-sm"
+      style="background: var(--bg-card); border-color: var(--warning); color: var(--text-secondary)"
+    >
+      <i class="fas fa-info-circle mt-0.5" style="color: var(--warning)"></i>
+      <p>
+        Мониторинг позиций пока не подключён — в проекте нет интеграции с сервисом отслеживания позиций в
+        поисковой выдаче. Ниже — макет интерфейса без выдуманных цифр: реальны только ваши проекты в
+        выпадающем списке, остальное покажет данные, когда появится подключённый сервис.
+      </p>
+    </div>
+
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
+      <select class="compact-select">
+        @if (projects().length === 0) {
+          <option>Нет проектов</option>
+        } @else {
+          @for (project of projects(); track project.id) {
+            <option>{{ project.name }}</option>
+          }
+        }
+      </select>
+      <div class="flex gap-2">
+        <button type="button" class="primary-btn compact-btn" (click)="notifyUnavailable()">
+          <i class="fas fa-sync"></i> Обновить
+        </button>
+        <button type="button" class="secondary-btn compact-btn" (click)="notifyUnavailable()">
+          <i class="fas fa-download"></i> Экспорт
+        </button>
+      </div>
+    </div>
+
+    <div class="mb-5 flex flex-wrap gap-4">
+      <select class="compact-select" disabled><option>Yandex</option><option>Google</option></select>
+      <select class="compact-select" disabled><option>Москва</option><option>Россия</option></select>
+      <select class="compact-select" disabled><option>Все группы запросов</option></select>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Видимость</h3>
+        <div class="stat-number">—</div>
+      </div>
+      <div class="stat-card">
+        <h3>Средняя позиция</h3>
+        <div class="stat-number">—</div>
+      </div>
+      <div class="stat-card">
+        <h3>Запросы в топ-10</h3>
+        <div class="stat-number">—</div>
+      </div>
+    </div>
+
+    <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      @for (bucket of ['1-3', '1-10', '11-30', '31-50', '51-100', '100+']; track bucket) {
+        <div class="rounded-(--border-radius) border p-4 text-center" style="background: var(--bg-card); border-color: var(--border-color)">
+          <div class="text-sm font-semibold" style="color: var(--text-primary)">{{ bucket }}</div>
+          <div class="mt-2 text-2xl font-extrabold" style="color: var(--text-muted)">—</div>
+        </div>
+      }
+    </div>
+
+    <div class="mt-6 table-container">
+      <div class="table-header" style="grid-template-columns: 1fr 100px 100px 100px 100px">
+        <div>Запрос</div>
+        <div>Частота</div>
+        <div>Позиция</div>
+        <div>Позиция</div>
+        <div>Позиция</div>
+      </div>
+      <div class="loading-placeholder">Нет отслеживаемых поисковых запросов.</div>
+    </div>
+  </main>
+</div>

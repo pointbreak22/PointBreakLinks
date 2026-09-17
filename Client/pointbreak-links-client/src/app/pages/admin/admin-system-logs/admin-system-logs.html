@@ -1,0 +1,37 @@
+<app-header />
+
+<div class="main-container">
+  <app-sidebar />
+
+  <main class="content">
+    <div class="workspace-header">
+      <h2><i class="fas fa-clipboard-list"></i> Логи системы</h2>
+    </div>
+
+    <div class="table-container">
+      <div class="table-header" style="grid-template-columns: 90px 1fr 1fr 150px">
+        <div>Заказ</div>
+        <div>Площадка</div>
+        <div>Событие</div>
+        <div>Дата</div>
+      </div>
+
+      @if (adminStore.systemLogsLoading()) {
+        <div class="loading-placeholder"><i class="fas fa-spinner fa-spin"></i> Загрузка данных...</div>
+      } @else if (adminStore.systemLogs().length === 0) {
+        <div class="loading-placeholder">Событий пока нет.</div>
+      } @else {
+        @for (log of adminStore.systemLogs(); track log.id) {
+          <div class="table-row" style="grid-template-columns: 90px 1fr 1fr 150px">
+            <div>#{{ log.purchasedSiteId }}</div>
+            <div class="text-muted">{{ log.siteUrl }}</div>
+            <div>{{ log.description }}</div>
+            <div><span class="date">{{ log.createdAt }}</span></div>
+          </div>
+        }
+      }
+    </div>
+
+    <app-pagination [meta]="adminStore.systemLogsMeta()" (pageChange)="changePage($event)" />
+  </main>
+</div>

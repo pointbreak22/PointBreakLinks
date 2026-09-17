@@ -1,0 +1,1111 @@
+/*
+ * Shared component classes driven entirely by the CSS custom properties each palette in
+ * ./palettes/*.css defines (--primary, --bg-card, --gradient, --shadow, --border-radius, ...).
+ * One set of classes, many skins — ported from FOXLinks' assets/css/main.css. Page/component
+ * -specific layout (hero sections, grids, one-off spacing) does NOT belong here — use Tailwind
+ * utilities in the component template for that instead, reaching into the same tokens via
+ * arbitrary values (e.g. bg-[var(--bg-card)]) when a color/spacing token is needed.
+ */
+
+body {
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+  color: var(--text-primary);
+  line-height: 1.6;
+  font-size: 14px;
+  min-height: 100vh;
+  transition:
+    background-color 0.5s ease,
+    color 0.3s ease;
+}
+
+/* Floating background blobs, rendered once in the app shell (see app.html). */
+.bg-elements {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.bg-element {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--gradient-premium);
+  opacity: 0.1;
+  filter: blur(40px);
+}
+
+.dark-theme .bg-element {
+  opacity: 0.03;
+}
+
+.bg-1 {
+  width: 600px;
+  height: 600px;
+  top: -300px;
+  right: -200px;
+  animation: float 20s ease-in-out infinite;
+}
+
+.bg-2 {
+  width: 400px;
+  height: 400px;
+  bottom: -200px;
+  left: -100px;
+  animation: float 25s ease-in-out infinite reverse;
+}
+
+.bg-3 {
+  width: 300px;
+  height: 300px;
+  top: 50%;
+  left: 10%;
+  animation: float 30s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+  }
+}
+
+/* Buttons */
+.primary-btn {
+  background: var(--gradient);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  font-size: 14px;
+}
+
+.primary-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: var(--transition);
+}
+
+.primary-btn:hover::before {
+  left: 100%;
+}
+
+.primary-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.primary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.secondary-btn {
+  background: var(--bg-card);
+  backdrop-filter: var(--blur);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  padding: 14px 28px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 500;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.secondary-btn:hover {
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+}
+
+.outline-btn {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 12px 24px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 500;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.outline-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--primary);
+}
+
+/* Cards */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  backdrop-filter: var(--blur);
+  border-radius: var(--border-radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  border-left: 4px solid var(--primary);
+  border: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+.stat-card h3 {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.stat-number,
+.stat-number-large {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.stat-trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.trend-up {
+  color: var(--success);
+}
+
+.trend-down {
+  color: var(--danger);
+}
+
+/* Ported from FOXLinks' main.css — used by pages/system-settings and pages/admin-api's
+   "settings"-shaped blocks (form rows of labeled inputs/toggles). */
+.system-settings {
+  background: var(--bg-card);
+  backdrop-filter: var(--blur);
+  border-radius: var(--border-radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  margin-bottom: 30px;
+}
+
+.settings-group {
+  margin-bottom: 30px;
+}
+
+.settings-group h3 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+}
+
+.settings-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.settings-row.full-width {
+  grid-template-columns: 1fr;
+}
+
+.setting-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 30px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--gray-300);
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: '';
+  height: 22px;
+  width: 22px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background-color: var(--primary);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(30px);
+}
+
+.toggle-switch input:disabled + .toggle-slider {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.danger-zone {
+  border: 1px solid var(--danger);
+  border-radius: var(--border-radius);
+  padding: 24px;
+  background: rgba(231, 76, 60, 0.05);
+}
+
+.danger-zone h3 {
+  color: var(--danger);
+  margin-bottom: 16px;
+}
+
+.action-card {
+  background: var(--bg-card);
+  backdrop-filter: var(--blur);
+  border-radius: var(--border-radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+}
+
+.action-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(255, 155, 0, 0.3);
+}
+
+.action-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255, 155, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: var(--primary);
+  font-size: 24px;
+  transition: var(--transition);
+}
+
+.action-card:hover .action-icon {
+  background: var(--gradient);
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Tables */
+.table-container {
+  background: var(--bg-card);
+  backdrop-filter: var(--blur);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+}
+
+.table-header,
+.table-row {
+  display: grid;
+  gap: 16px;
+  padding: 18px 20px;
+  align-items: center;
+}
+
+.table-header {
+  /* FOXLinks used --gray-100 here, which in every palette's light theme is a dark navy —
+     the same color as --text-primary, making the header text invisible (only the .dark-theme
+     override, using --bg-secondary, happened to make it legible). --bg-secondary works in
+     both themes since it's always the contrast base for --text-primary. */
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.table-row {
+  border-bottom: 1px solid var(--border-color);
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.table-row:hover {
+  background: var(--bg-card-hover);
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+/* Badges */
+.status,
+.role {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.status.active {
+  background: rgba(40, 180, 70, 0.2);
+  color: var(--success);
+}
+.status.suspended {
+  background: #fef3c7;
+  color: #92400e;
+}
+.status.pending {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+.status.banned {
+  background: #fee2e2;
+  color: #991b1b;
+}
+.status.application {
+  background: rgba(40, 180, 70, 0.2);
+  color: #219c3a;
+}
+.status.moderation {
+  background: rgba(255, 155, 0, 0.2);
+  color: #e55a00;
+}
+.status.rejected {
+  background: rgba(231, 76, 60, 0.2);
+  color: #c0392b;
+}
+.status.draft {
+  background: rgba(149, 163, 184, 0.2);
+  color: #64748b;
+}
+.status.work {
+  background: rgba(255, 155, 0, 0.2);
+  color: var(--primary-dark);
+}
+.status.cancelled {
+  background: rgba(231, 76, 60, 0.2);
+  color: #c0392b;
+}
+.status.published {
+  background: rgba(40, 180, 70, 0.2);
+  color: #219c3a;
+}
+.status.completed {
+  background: rgba(40, 180, 70, 0.35);
+  color: #15803d;
+}
+.status.disputed {
+  background: rgba(255, 155, 0, 0.25);
+  color: #b45309;
+}
+.status.paid {
+  background: rgba(40, 180, 70, 0.2);
+  color: var(--success);
+}
+
+.role.admin {
+  background: rgba(255, 155, 0, 0.2);
+  color: var(--primary-dark);
+}
+.role.user {
+  background: rgba(66, 133, 244, 0.2);
+  color: #1a73e8;
+}
+.role.moderator {
+  background: rgba(40, 180, 70, 0.2);
+  color: var(--success);
+}
+.role.webmaster {
+  background: rgba(156, 39, 176, 0.2);
+  color: #8e24aa;
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius-lg);
+  width: 90%;
+  max-width: 600px;
+  box-shadow: var(--shadow-2xl);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-secondary);
+}
+
+.modal-header h2,
+.modal-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: var(--transition);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  color: var(--text-secondary);
+  background: var(--bg-card-hover);
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: var(--bg-secondary);
+}
+
+/* Forms */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  font-size: 14px;
+  transition: var(--transition);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(255, 155, 0, 0.1);
+}
+
+/* Ported from FOXLinks' pages/position.vue scoped styles — a smaller select/button pair used
+   by its filter row. */
+.compact-select {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.compact-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.compact-btn {
+  padding: 10px 16px;
+  font-size: 14px;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10px;
+  margin-top: 20px;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pagination-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+}
+
+.pagination-btn:hover {
+  background: var(--bg-card-hover);
+}
+
+.pagination-btn.active {
+  background: var(--gradient);
+  color: white;
+  border-color: var(--primary);
+}
+
+.pagination-info {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.date {
+  color: var(--text-muted);
+  font-size: 12px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.metric-value {
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .table-header,
+  .table-row {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  .table-header {
+    display: none;
+  }
+
+  .workspace-header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  /* Extra-specific selectors: the base (non-media) `.workspace-header h2` and `.content` rules
+     declared later in this file have equal specificity to a bare override here, and equal
+     specificity ties resolve by source order — so a plain override here would silently lose to
+     the base rule that follows it lower in the file. Adding the real ancestor class each element
+     always has (.content wraps .workspace-header; .main-container wraps .content) bumps
+     specificity just enough to win regardless of where either rule sits in the file. */
+  .content .workspace-header h2 {
+    font-size: 22px;
+  }
+
+  .main-container .content {
+    padding: 20px 16px;
+  }
+}
+
+/* App shell — sidebar + content area, shared by every dashboard-style page (webmaster,
+   optimizator, project, admin, ...). Ported from main.css (.main-container/.content) and
+   sidebar.vue's own scoped block (everything else here). */
+.main-container {
+  display: flex;
+  margin-top: 70px;
+  min-height: calc(100vh - 70px);
+}
+
+.content {
+  flex: 1;
+  margin-left: 280px;
+  padding: 30px;
+  overflow-y: auto;
+  transition: var(--transition);
+}
+
+.content.collapsed {
+  margin-left: 70px;
+}
+
+.sidebar {
+  width: 280px;
+  background: var(--bg-secondary);
+  backdrop-filter: var(--blur);
+  border-right: 1px solid var(--border-color);
+  padding: 24px 0;
+  overflow-y: auto;
+  position: fixed;
+  height: calc(100vh - 70px);
+  transition: var(--transition);
+  z-index: 900;
+}
+
+.sidebar.collapsed {
+  width: 70px;
+}
+
+.sidebar.collapsed .sidebar-section {
+  padding: 0 16px 16px;
+}
+
+.sidebar.collapsed .section-title {
+  display: none;
+}
+
+.sidebar.collapsed .nav-item span:not(.nav-icon),
+.sidebar.collapsed .dropdown-toggle span:not(.nav-icon),
+.sidebar.collapsed .dropdown-item span:not(.nav-icon) {
+  display: none;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 12px 0;
+}
+
+.sidebar.collapsed .nav-icon {
+  margin-right: 0;
+  font-size: 18px;
+}
+
+.sidebar.collapsed .dropdown-toggle .toggle-icon {
+  display: none;
+}
+
+.sidebar.collapsed .dropdown-content {
+  display: none;
+}
+
+.sidebar.collapsed .collapse-sidebar span {
+  display: none;
+}
+
+.sidebar.collapsed .collapse-sidebar {
+  justify-content: center;
+  padding: 12px;
+  margin: 16px 8px 0;
+}
+
+.sidebar-section {
+  padding: 0 24px 24px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-section:last-child {
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title i {
+  font-size: 14px;
+  color: var(--primary);
+}
+
+.nav-list {
+  list-style: none;
+}
+
+.nav-item {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: var(--transition);
+  font-size: 14px;
+  border-radius: var(--border-radius);
+  margin-bottom: 4px;
+  position: relative;
+  font-weight: 500;
+}
+
+.nav-item:hover {
+  color: var(--primary);
+  background-color: rgba(255, 155, 0, 0.1);
+  transform: translateX(5px);
+}
+
+.nav-item.active {
+  color: var(--primary);
+  font-weight: 600;
+  background-color: rgba(255, 155, 0, 0.15);
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: var(--primary);
+  border-radius: 0 4px 4px 0;
+  box-shadow: 0 0 10px var(--primary);
+}
+
+.sidebar.collapsed .nav-item.active::before {
+  left: -16px;
+}
+
+.nav-icon {
+  margin-right: 12px;
+  width: 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.nav-item.active .nav-icon,
+.nav-item:hover .nav-icon {
+  color: var(--primary);
+}
+
+.collapse-sidebar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  margin: 16px 24px 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.collapse-sidebar:hover {
+  background: var(--bg-card-hover);
+  transform: translateX(-3px);
+}
+
+.sidebar.collapsed .collapse-sidebar:hover {
+  transform: none;
+}
+
+.dropdown-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  cursor: pointer;
+}
+
+.dropdown-content {
+  max-height: 0;
+  overflow: hidden;
+  padding-left: 0;
+  transition:
+    max-height 0.3s ease,
+    padding-left 0.3s ease;
+}
+
+.dropdown-content.show {
+  max-height: 200px;
+  padding-left: 20px;
+}
+
+.toggle-icon {
+  transition: transform 0.3s ease;
+  color: var(--text-muted);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 0 10px 36px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: var(--transition);
+  font-size: 14px;
+  border-radius: var(--border-radius);
+  margin-bottom: 2px;
+}
+
+.dropdown-item:hover {
+  color: var(--primary);
+  background-color: rgba(255, 155, 0, 0.1);
+}
+
+.dropdown-item.active {
+  color: var(--primary);
+  font-weight: 500;
+  background-color: rgba(255, 155, 0, 0.15);
+}
+
+.sidebar-mobile-toggle,
+.sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 992px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .content,
+  .content.collapsed {
+    margin-left: 0;
+  }
+
+  /* Floating trigger for the off-canvas sidebar drawer above — the drawer itself has no
+     other way to open on narrow screens (the page's own workspace-header actions differ
+     per page, so a fixed corner button is the only spot guaranteed not to collide with
+     page-specific content). */
+  .sidebar-mobile-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: none;
+    background: var(--gradient);
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 901;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 70px 0 0 0;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    padding: 0;
+    z-index: 899;
+    cursor: default;
+  }
+}
+
+/* Workspace header — the title bar atop every dashboard page's content area. */
+.workspace-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.workspace-header h2 {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.workspace-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Table cell helpers — search box above a table, and common cell content shapes. */
+.search-box {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 14px 16px 14px 48px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 14px;
+  transition: var(--transition);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(255, 155, 0, 0.1);
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.site-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.site-url {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.price {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.btn-small {
+  padding: 8px 16px;
+  background: var(--gradient);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition);
+}
+
+.btn-small:hover {
+  background: var(--gradient-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.loading-placeholder {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-muted);
+}

@@ -1,0 +1,89 @@
+<app-header />
+
+<div class="main-container">
+  <app-sidebar />
+
+  <main class="content">
+    <div class="workspace-header">
+      <h2><i class="fas fa-file-alt"></i> Отчёты</h2>
+    </div>
+
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div
+        class="flex flex-col gap-3 rounded-(--border-radius-lg) border p-6"
+        style="background: var(--bg-card); border-color: var(--border-color)"
+      >
+        <div class="flex h-10 w-10 items-center justify-center rounded-full" style="background: rgba(255, 155, 0, 0.1); color: var(--primary)">
+          <i class="fas fa-shopping-cart"></i>
+        </div>
+        <h3 class="font-semibold" style="color: var(--text-primary)">Заказы</h3>
+        <p class="text-sm" style="color: var(--text-muted)">Все заказы платформы: площадка, покупатель, продавец, сумма, статус.</p>
+        <button type="button" class="secondary-btn justify-center" [disabled]="exporting() === 'orders'" (click)="export('orders')">
+          @if (exporting() === 'orders') {
+            <i class="fas fa-spinner fa-spin"></i>
+          } @else {
+            <i class="fas fa-download"></i>
+          }
+          Скачать CSV
+        </button>
+      </div>
+
+      <div
+        class="flex flex-col gap-3 rounded-(--border-radius-lg) border p-6"
+        style="background: var(--bg-card); border-color: var(--border-color)"
+      >
+        <div class="flex h-10 w-10 items-center justify-center rounded-full" style="background: rgba(255, 155, 0, 0.1); color: var(--primary)">
+          <i class="fas fa-exchange-alt"></i>
+        </div>
+        <h3 class="font-semibold" style="color: var(--text-primary)">Транзакции</h3>
+        <p class="text-sm" style="color: var(--text-muted)">Полная история операций по кошелькам: пополнения, покупки, продажи.</p>
+        <button type="button" class="secondary-btn justify-center" [disabled]="exporting() === 'transactions'" (click)="export('transactions')">
+          @if (exporting() === 'transactions') {
+            <i class="fas fa-spinner fa-spin"></i>
+          } @else {
+            <i class="fas fa-download"></i>
+          }
+          Скачать CSV
+        </button>
+      </div>
+
+      <div
+        class="flex flex-col gap-3 rounded-(--border-radius-lg) border p-6"
+        style="background: var(--bg-card); border-color: var(--border-color)"
+      >
+        <div class="flex h-10 w-10 items-center justify-center rounded-full" style="background: rgba(255, 155, 0, 0.1); color: var(--primary)">
+          <i class="fas fa-users"></i>
+        </div>
+        <h3 class="font-semibold" style="color: var(--text-primary)">Пользователи</h3>
+        <p class="text-sm" style="color: var(--text-muted)">Все зарегистрированные пользователи: роли, проекты, статус блокировки.</p>
+        <button type="button" class="secondary-btn justify-center" [disabled]="exporting() === 'users'" (click)="export('users')">
+          @if (exporting() === 'users') {
+            <i class="fas fa-spinner fa-spin"></i>
+          } @else {
+            <i class="fas fa-download"></i>
+          }
+          Скачать CSV
+        </button>
+      </div>
+
+      <div
+        class="flex flex-col gap-3 rounded-(--border-radius-lg) border p-6"
+        style="background: var(--bg-card); border-color: var(--border-color)"
+      >
+        <div class="flex h-10 w-10 items-center justify-center rounded-full" style="background: rgba(255, 155, 0, 0.1); color: var(--primary)">
+          <i class="fas fa-money-bill-wave"></i>
+        </div>
+        <h3 class="font-semibold" style="color: var(--text-primary)">Заявки на вывод</h3>
+        <p class="text-sm" style="color: var(--text-muted)">Вся история заявок на вывод средств: сумма, реквизиты, статус, кто и когда обработал.</p>
+        <button type="button" class="secondary-btn justify-center" [disabled]="exporting() === 'withdrawals'" (click)="export('withdrawals')">
+          @if (exporting() === 'withdrawals') {
+            <i class="fas fa-spinner fa-spin"></i>
+          } @else {
+            <i class="fas fa-download"></i>
+          }
+          Скачать CSV
+        </button>
+      </div>
+    </div>
+  </main>
+</div>

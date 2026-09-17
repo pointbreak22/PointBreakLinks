@@ -1,0 +1,87 @@
+<app-header />
+
+<div class="main-container">
+  <app-sidebar />
+
+  <main class="content">
+    <div class="workspace-header">
+      <h2><i class="fas fa-users"></i> Управление пользователями</h2>
+    </div>
+
+    <div class="mb-4 flex flex-wrap gap-3">
+      <input
+        type="text"
+        class="form-control"
+        style="max-width: 280px"
+        placeholder="Поиск по имени или email"
+        [formControl]="searchControl"
+      />
+      <select class="form-control" style="max-width: 220px" (change)="onRoleFilterChange($event)">
+        <option value="">Все роли</option>
+        @for (role of roleOptions; track role.name) {
+          <option [value]="role.name">{{ role.displayName }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="table-container">
+      <div class="table-header" style="grid-template-columns: 1fr 160px 100px 120px 110px 160px">
+        <div>Пользователь</div>
+        <div>Роль</div>
+        <div>Проектов</div>
+        <div>Регистрация</div>
+        <div>Статус</div>
+        <div>Действия</div>
+      </div>
+
+      @if (adminStore.loading()) {
+        <div class="loading-placeholder"><i class="fas fa-spinner fa-spin"></i> Загрузка данных...</div>
+      } @else if (adminStore.users().length === 0) {
+        <div class="loading-placeholder">Пользователи не найдены.</div>
+      } @else {
+        @for (user of adminStore.users(); track user.id) {
+          <div class="table-row" style="grid-template-columns: 1fr 160px 100px 120px 110px 160px">
+            <div class="site-info">
+              <div class="site-url">{{ user.name }}</div>
+              <div class="text-muted">{{ user.email }}</div>
+            </div>
+            <div>
+              <select class="form-control" (change)="onRoleChange(user.id, $event)">
+                @for (role of roleOptions; track role.name) {
+                  <option [value]="role.name" [selected]="role.name === user.roles[0]?.name">{{ role.displayName }}</option>
+                }
+              </select>
+            </div>
+            <div><span class="metric-value">{{ user.projectsCount }}</span></div>
+            <div><span class="date">{{ user.createdAt }}</span></div>
+            <div>
+              <span class="status" [class.active]="!user.isBanned" [class.banned]="user.isBanned">
+                {{ user.isBanned ? 'Заблокирован' : 'Активен' }}
+              </span>
+              @if (user.lockedUntil) {
+                <div class="text-muted mt-1 text-sm"><i class="fas fa-lock"></i> Вход заблокирован до {{ user.lockedUntil }}</div>
+              }
+            </div>
+            <div class="flex flex-col items-start gap-1">
+              @if (user.id === userStore.currentUser()?.id) {
+                <span class="text-muted">Это вы</span>
+              } @else {
+                <button type="button" class="btn-small" (click)="toggleBanned(user.id, user.isBanned)">
+                  <i class="fas" [class.fa-ban]="!user.isBanned" [class.fa-check-circle]="user.isBanned"></i>
+                  {{ user.isBanned ? 'Разблокировать' : 'Заблокировать' }}
+                </button>
+                @if (user.lockedUntil) {
+                  <button type="button" class="btn-small" (click)="unlock(user.id)">
+                    <i class="fas fa-unlock"></i> Снять блокировку входа
+                  </button>
+                }
+              }
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    <app-pagination [meta]="adminStore.meta()" (pageChange)="changePage($event)" />
+  </main>
+</div>

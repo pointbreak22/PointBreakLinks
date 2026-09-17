@@ -1,0 +1,92 @@
+<app-header />
+
+<main class="flex min-h-screen items-center justify-center px-4 pt-17.5">
+  @if (twoFactorTicket()) {
+    <form
+      class="w-full max-w-sm rounded-(--border-radius-lg) border p-8 shadow-(--shadow-2xl)"
+      style="background: var(--bg-card); border-color: var(--border-color)"
+      [formGroup]="twoFactorForm"
+      (ngSubmit)="submitTwoFactor()"
+      novalidate
+    >
+      <h1 class="mb-2 text-center text-2xl font-extrabold" style="color: var(--text-primary)">Код подтверждения</h1>
+      <p class="mb-6 text-center text-sm" style="color: var(--text-muted)">
+        Введите 6-значный код из приложения-аутентификатора или один из резервных кодов.
+      </p>
+
+      <div class="form-group">
+        <label for="two-factor-code">Код</label>
+        <input
+          id="two-factor-code"
+          type="text"
+          autocomplete="one-time-code"
+          formControlName="code"
+          class="form-control"
+          placeholder="000000 или XXXX-XXXX"
+          maxlength="9"
+        />
+        @if (twoFactorForm.controls.code.invalid && twoFactorForm.controls.code.touched) {
+          <p class="mt-1 text-sm text-red-600" role="alert">Введите код из приложения.</p>
+        }
+      </div>
+
+      <label class="mb-4 flex items-center gap-2 text-sm" style="color: var(--text-secondary)">
+        <input type="checkbox" formControlName="rememberDevice" />
+        Запомнить это устройство на 30 дней
+      </label>
+
+      @if (errorMessage()) {
+        <p class="mb-4 text-sm text-red-600" role="alert">{{ errorMessage() }}</p>
+      }
+
+      <button type="submit" [disabled]="submitting()" class="primary-btn w-full justify-center">
+        {{ submitting() ? 'Проверка...' : 'Подтвердить' }}
+      </button>
+
+      <button type="button" class="mt-3 w-full text-center text-sm" style="color: var(--text-muted); background: none; border: none; cursor: pointer" (click)="cancelTwoFactor()">
+        Назад ко входу
+      </button>
+    </form>
+  } @else {
+    <form
+      class="w-full max-w-sm rounded-(--border-radius-lg) border p-8 shadow-(--shadow-2xl)"
+      style="background: var(--bg-card); border-color: var(--border-color)"
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      novalidate
+    >
+      <h1 class="mb-6 text-center text-2xl font-extrabold" style="color: var(--text-primary)">Вход</h1>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" formControlName="email" autocomplete="email" class="form-control" />
+        @if (form.controls.email.invalid && form.controls.email.touched) {
+          <p class="mt-1 text-sm text-red-600" role="alert">Введите корректный email.</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Пароль</label>
+        <input id="password" type="password" formControlName="password" autocomplete="current-password" class="form-control" />
+        @if (form.controls.password.invalid && form.controls.password.touched) {
+          <p class="mt-1 text-sm text-red-600" role="alert">Введите пароль.</p>
+        }
+        <p class="mt-1 text-right text-sm">
+          <a routerLink="/forgot-password" style="color: var(--primary)">Забыли пароль?</a>
+        </p>
+      </div>
+
+      @if (errorMessage()) {
+        <p class="mb-4 text-sm text-red-600" role="alert">{{ errorMessage() }}</p>
+      }
+
+      <button type="submit" [disabled]="submitting()" class="primary-btn w-full justify-center">
+        {{ submitting() ? 'Вход...' : 'Войти' }}
+      </button>
+
+      <p class="mt-4 text-center text-sm" style="color: var(--text-muted)">
+        Нет аккаунта? <a routerLink="/register" style="color: var(--primary)">Зарегистрироваться</a>
+      </p>
+    </form>
+  }
+</main>

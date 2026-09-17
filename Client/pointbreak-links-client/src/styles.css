@@ -1,0 +1,51 @@
+@import 'tailwindcss';
+@import './styles/design-system.css';
+@import './styles/palettes/index-palette.css';
+@import './styles/palettes/register-palette.css';
+@import './styles/palettes/webmaster-palette.css';
+@import './styles/palettes/optimizator-palette.css';
+@import './styles/palettes/project-palette.css';
+@import './styles/palettes/admin-palette.css';
+@import './styles/palettes/analytics-palette.css';
+@import './styles/palettes/position-palette.css';
+
+/*
+ * Baseline fallback so anything rendered before PaletteService applies a route's palette (or a
+ * route that never sets one) still gets a coherent, non-broken look, instead of every
+ * var(--token) resolving to nothing. Mirrors the "index" palette's light theme.
+ */
+:root {
+  --primary: #ff6b00;
+  --primary-dark: #e55a00;
+  --primary-light: #fff0e6;
+  --secondary: #00c853;
+  --success: #00c853;
+  --warning: #ff9800;
+  --danger: #f44336;
+  --info: #2196f3;
+
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.95);
+  --bg-card-hover: rgba(255, 255, 255, 1);
+  --text-primary: #1e293b;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --border-color: rgba(0, 0, 0, 0.08);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+
+  --gray-100: #1e293b;
+
+  --border-radius: 12px;
+  --border-radius-sm: 8px;
+  --border-radius-lg: 16px;
+
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  --gradient: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);
+  --gradient-premium: linear-gradient(135deg, #ff6b00 0%, #ff4081 50%, #7c4dff 100%);
+
+  --blur: blur(12px);
+}

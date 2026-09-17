@@ -1,0 +1,106 @@
+<app-header />
+
+<main class="mx-auto max-w-5xl px-4 pt-24 pb-12">
+  <h1 class="mb-6 text-2xl font-extrabold" style="color: var(--text-primary)">Сообщения</h1>
+
+  <div class="flex gap-4" style="height: calc(100vh - 190px); min-height: 400px">
+    <!-- Conversation list: always visible at lg+; on mobile, hidden once a thread is open. -->
+    <aside
+      class="w-full flex-col overflow-y-auto rounded-(--border-radius-lg) border lg:!flex lg:w-80 lg:shrink-0"
+      style="background: var(--bg-card); border-color: var(--border-color)"
+      [class.hidden]="store.activeConversation()"
+      [class.flex]="!store.activeConversation()"
+    >
+      @if (store.loading()) {
+        <p class="p-6 text-center text-sm" style="color: var(--text-muted)"><i class="fas fa-spinner fa-spin"></i> Загрузка...</p>
+      } @else if (store.conversations().length === 0) {
+        <p class="p-6 text-center text-sm" style="color: var(--text-muted)">Переписок пока нет.</p>
+      } @else {
+        @for (conversation of store.conversations(); track conversation.purchasedSiteId) {
+          <button
+            type="button"
+            class="flex w-full flex-col gap-1 border-b px-4 py-3 text-left"
+            style="border-color: var(--border-color)"
+            [style.background]="store.activeConversation()?.purchasedSiteId === conversation.purchasedSiteId ? 'var(--bg-card-hover)' : 'transparent'"
+            (click)="open(conversation)"
+          >
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-semibold" style="color: var(--text-primary)">{{ conversation.counterpartyName }}</span>
+              @if (conversation.unreadCount > 0) {
+                <span
+                  class="flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold text-white"
+                  style="background: var(--danger, #ef4444)"
+                >
+                  {{ conversation.unreadCount > 9 ? '9+' : conversation.unreadCount }}
+                </span>
+              }
+            </div>
+            <div class="truncate text-xs" style="color: var(--text-muted)">{{ conversation.siteUrl }}</div>
+            <div class="truncate text-sm" style="color: var(--text-secondary)">{{ conversation.lastMessageText }}</div>
+            <div class="text-[11px]" style="color: var(--text-muted)">{{ conversation.lastMessageAt }}</div>
+          </button>
+        }
+      }
+    </aside>
+
+    <!-- Active thread: always visible at lg+ (shows a placeholder when nothing is selected);
+         on mobile, hidden until a conversation is opened. -->
+    <section
+      class="w-full flex-col overflow-hidden rounded-(--border-radius-lg) border lg:!flex lg:flex-1"
+      style="background: var(--bg-card); border-color: var(--border-color)"
+      [class.hidden]="!store.activeConversation()"
+      [class.flex]="!!store.activeConversation()"
+    >
+      @if (store.activeConversation(); as conversation) {
+        <div class="flex items-center gap-3 border-b px-4 py-3" style="border-color: var(--border-color)">
+          <button type="button" class="modal-close lg:hidden" (click)="back()" aria-label="Назад к списку">
+            <i class="fas fa-arrow-left"></i>
+          </button>
+          <div>
+            <div class="font-semibold" style="color: var(--text-primary)">{{ conversation.counterpartyName }}</div>
+            <div class="text-xs" style="color: var(--text-muted)">{{ conversation.siteUrl }}</div>
+          </div>
+        </div>
+
+        <div class="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+          @if (store.threadLoading()) {
+            <p class="text-center text-sm" style="color: var(--text-muted)"><i class="fas fa-spinner fa-spin"></i> Загрузка сообщений...</p>
+          } @else if (store.thread().length === 0) {
+            <p class="text-center text-sm" style="color: var(--text-muted)">Сообщений пока нет — начните диалог.</p>
+          } @else {
+            @for (message of store.thread(); track message.id) {
+              <div class="flex" [class.justify-end]="message.senderId === userStore.currentUser()?.id">
+                <div
+                  class="max-w-[75%] rounded-(--border-radius) px-4 py-2 text-sm"
+                  [style.background]="message.senderId === userStore.currentUser()?.id ? 'var(--gradient)' : 'var(--bg-secondary)'"
+                  [style.color]="message.senderId === userStore.currentUser()?.id ? 'white' : 'var(--text-primary)'"
+                >
+                  <p>{{ message.text }}</p>
+                  <p class="mt-1 text-[11px] opacity-70">{{ message.createdAt }}</p>
+                </div>
+              </div>
+            }
+          }
+        </div>
+
+        <form class="flex items-end gap-2 border-t p-3" style="border-color: var(--border-color)" (ngSubmit)="send()">
+          <textarea
+            [(ngModel)]="draftText"
+            name="draftText"
+            rows="1"
+            placeholder="Введите сообщение..."
+            class="form-control flex-1"
+            (keydown.enter)="$event.preventDefault(); send()"
+          ></textarea>
+          <button type="submit" class="primary-btn" [disabled]="store.sending() || !draftText.trim()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </form>
+      } @else {
+        <div class="flex flex-1 items-center justify-center p-6 text-center text-sm" style="color: var(--text-muted)">
+          Выберите переписку слева, чтобы посмотреть сообщения.
+        </div>
+      }
+    </section>
+  </div>
+</main>

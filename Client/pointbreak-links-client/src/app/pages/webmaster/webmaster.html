@@ -1,0 +1,13 @@
+<app-header />
+
+<div class="main-container">
+  <app-sidebar [webmasterTab]="activeTab()" (webmasterTabChange)="activeTab.set($event)" />
+
+  <main class="content" [class.collapsed]="sidebarService.isCollapsed()">
+    @if (activeTab() === 'platforms') {
+      <app-my-platforms />
+    } @else {
+      <app-my-sales />
+    }
+  </main>
+</div>

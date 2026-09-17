@@ -1,0 +1,234 @@
+<header
+  class="fixed inset-x-0 top-0 z-[1000] flex h-[70px] items-center justify-between border-b px-3 transition-[var(--transition)] sm:px-6"
+  [style.background]="variant() === 'dark' ? 'var(--dark)' : 'var(--bg-secondary)'"
+  [style.borderColor]="'var(--border-color)'"
+>
+  <a routerLink="/" class="flex items-center gap-2 no-underline sm:gap-3">
+    <span
+      class="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--border-radius-sm)] text-white"
+      style="background: var(--gradient)"
+    >
+      <i class="fas fa-link text-sm"></i>
+    </span>
+    <span class="text-base font-extrabold whitespace-nowrap sm:text-xl" style="color: var(--text-primary)">
+      Pointbreak<span style="color: var(--primary)">Links</span>
+    </span>
+  </a>
+
+  <ng-template #navLinks>
+    @if (isHome()) {
+      <a routerLink="/" fragment="home" class="text-sm font-medium" style="color: var(--text-secondary)">Главная</a>
+    }
+    @if (userStore.isAuthenticated()) {
+      @for (item of navItems(); track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive
+          #rla="routerLinkActive"
+          class="flex items-center gap-2 text-sm font-medium"
+          [style.color]="rla.isActive ? 'var(--primary)' : 'var(--text-secondary)'"
+        >
+          <i class="fas" [class]="item.icon"></i>
+          {{ item.label }}
+        </a>
+      }
+    }
+    @if (isHome() && !userStore.isAuthenticated()) {
+      <a routerLink="/knowledge" class="text-sm font-medium" style="color: var(--text-secondary)">База знаний</a>
+    }
+  </ng-template>
+
+  <nav class="hidden items-center gap-6 lg:flex">
+    <ng-container [ngTemplateOutlet]="navLinks" />
+  </nav>
+
+  <button
+    type="button"
+    class="flex h-10 w-10 items-center justify-center rounded-[var(--border-radius)] text-lg lg:hidden"
+    style="color: var(--text-primary); background: rgba(255, 255, 255, 0.05)"
+    (click)="toggleMobileMenu()"
+    aria-label="Меню"
+  >
+    <i class="fas fa-bars"></i>
+  </button>
+
+  @if (mobileMenuOpen()) {
+    <nav
+      class="absolute inset-x-0 top-[70px] flex flex-col gap-3 border-b p-4 lg:hidden"
+      style="background: var(--bg-secondary); border-color: var(--border-color)"
+      (click)="toggleMobileMenu()"
+    >
+      <ng-container [ngTemplateOutlet]="navLinks" />
+      @if (isHome() && !userStore.isAuthenticated()) {
+        <a routerLink="/register" class="primary-btn justify-center">
+          <i class="fas fa-user-plus"></i> Регистрация
+        </a>
+      }
+    </nav>
+  }
+
+  <div class="flex items-center gap-2 sm:gap-4">
+    @if (!isHome()) {
+      <button
+        type="button"
+        class="hidden h-9 w-9 items-center justify-center rounded-full sm:flex"
+        style="color: var(--text-secondary); background: var(--bg-card)"
+        (click)="themeService.toggle()"
+        [attr.aria-label]="themeService.theme() === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему'"
+      >
+        <i class="fas" [class.fa-sun]="themeService.theme() === 'dark'" [class.fa-moon]="themeService.theme() === 'light'"></i>
+      </button>
+    }
+
+    @if (userStore.isAuthenticated()) {
+      <a
+        routerLink="/wallet"
+        class="hidden items-center gap-2 rounded-[var(--border-radius-sm)] px-3 py-2 text-sm font-semibold no-underline sm:flex"
+        style="background: var(--bg-card); color: var(--text-primary)"
+      >
+        <i class="fas fa-wallet" style="color: var(--primary)"></i>
+        {{ userStore.currentUser()?.balance | number: '1.2-2' }} ₽
+      </a>
+      <div class="relative">
+        <button
+          type="button"
+          class="relative flex h-9 w-9 items-center justify-center rounded-full"
+          style="color: var(--text-secondary); background: var(--bg-card)"
+          (click)="toggleNotificationsMenu($event)"
+          aria-haspopup="menu"
+          [attr.aria-expanded]="notificationsMenuOpen()"
+          aria-label="Уведомления"
+        >
+          <i class="fas fa-bell"></i>
+          @if (notificationsStore.unreadCount() > 0) {
+            <span
+              class="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
+              style="background: var(--danger, #ef4444)"
+            >
+              {{ notificationsStore.unreadCount() > 9 ? '9+' : notificationsStore.unreadCount() }}
+            </span>
+          }
+        </button>
+
+        @if (notificationsMenuOpen()) {
+          <button
+            type="button"
+            class="fixed inset-0 z-[1099] cursor-default"
+            (click)="closeNotificationsMenu()"
+            aria-label="Закрыть уведомления"
+          ></button>
+          <div
+            class="absolute right-0 z-[1100] mt-2 w-80 overflow-hidden rounded-[var(--border-radius)] border shadow-[var(--shadow-lg)]"
+            style="background: var(--bg-secondary); border-color: var(--border-color)"
+            role="menu"
+          >
+            <div class="flex items-center justify-between border-b px-4 py-3" style="border-color: var(--border-color)">
+              <span class="font-semibold" style="color: var(--text-primary)">Уведомления</span>
+              @if (notificationsStore.unreadCount() > 0) {
+                <button type="button" class="text-xs" style="color: var(--primary)" (click)="markAllNotificationsRead()">
+                  Прочитать все
+                </button>
+              }
+            </div>
+            <div class="max-h-96 overflow-y-auto">
+              @if (notificationsStore.loading()) {
+                <p class="px-4 py-6 text-center text-sm" style="color: var(--text-muted)">Загрузка...</p>
+              } @else if (notificationsStore.notifications().length === 0) {
+                <p class="px-4 py-6 text-center text-sm" style="color: var(--text-muted)">Уведомлений пока нет.</p>
+              } @else {
+                @for (notification of notificationsStore.notifications(); track notification.id) {
+                  <div
+                    class="border-b px-4 py-3 text-sm last:border-b-0"
+                    style="border-color: var(--border-color)"
+                    [style.background]="notification.isRead ? 'transparent' : 'var(--bg-card)'"
+                  >
+                    <p style="color: var(--text-primary)">{{ notification.message }}</p>
+                    <small style="color: var(--text-muted)">{{ notification.createdAt | date: 'dd.MM.yyyy HH:mm' }}</small>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        }
+      </div>
+      <a
+        routerLink="/messages"
+        class="relative hidden h-9 w-9 items-center justify-center rounded-full sm:flex"
+        style="color: var(--text-secondary); background: var(--bg-card)"
+        aria-label="Сообщения"
+      >
+        <i class="fas fa-comment"></i>
+        @if (messagesStore.unreadCount() > 0) {
+          <span
+            class="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
+            style="background: var(--danger, #ef4444)"
+          >
+            {{ messagesStore.unreadCount() > 9 ? '9+' : messagesStore.unreadCount() }}
+          </span>
+        }
+      </a>
+
+      <div class="relative">
+        <button
+          type="button"
+          class="flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold text-white"
+          style="background: var(--gradient)"
+          (click)="toggleProfileMenu($event)"
+          aria-haspopup="menu"
+          [attr.aria-expanded]="profileMenuOpen()"
+        >
+          {{ userStore.currentUser()?.name?.charAt(0)?.toUpperCase() }}
+        </button>
+
+        @if (profileMenuOpen()) {
+          <button
+            type="button"
+            class="fixed inset-0 z-[1099] cursor-default"
+            (click)="closeProfileMenu()"
+            aria-label="Закрыть меню профиля"
+          ></button>
+          <div
+            class="absolute right-0 z-[1100] mt-2 w-56 overflow-hidden rounded-[var(--border-radius)] border py-2 shadow-[var(--shadow-lg)]"
+            style="background: var(--bg-secondary); border-color: var(--border-color)"
+            role="menu"
+          >
+            <a
+              routerLink="/profile"
+              class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm no-underline"
+              style="color: var(--text-primary)"
+              (click)="closeProfileMenu()"
+            >
+              <i class="fas fa-user"></i> Профиль
+            </a>
+            <button
+              type="button"
+              class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm"
+              style="color: var(--text-primary)"
+              (click)="logout()"
+            >
+              <i class="fas fa-sign-out-alt"></i> Выйти
+            </button>
+          </div>
+        }
+      </div>
+    } @else if (isHome()) {
+      <div class="hidden items-center gap-2 sm:flex">
+        <a routerLink="/register" class="primary-btn">
+          <i class="fas fa-user-plus"></i> Регистрация
+        </a>
+        <button type="button" class="outline-btn" (click)="showLoginModal.set(true)">
+          <i class="fas fa-sign-in-alt"></i> Войти
+        </button>
+      </div>
+      <div class="sm:hidden">
+        <button type="button" class="outline-btn" style="padding: 8px 14px" (click)="showLoginModal.set(true)">
+          <i class="fas fa-sign-in-alt"></i>
+        </button>
+      </div>
+    }
+  </div>
+
+  @if (showLoginModal()) {
+    <app-login-modal (close)="showLoginModal.set(false)" (loginSuccess)="onLoginSuccess()" />
+  }
+</header>
