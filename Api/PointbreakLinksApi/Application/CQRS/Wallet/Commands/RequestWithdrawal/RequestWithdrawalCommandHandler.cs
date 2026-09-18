@@ -19,16 +19,8 @@ public class RequestWithdrawalCommandHandler(
 {
     public async Task<WithdrawalRequestDto> Handle(RequestWithdrawalCommand request, CancellationToken cancellationToken)
     {
-        if (request.Amount <= 0)
-        {
-            throw new ConflictException("Сумма вывода должна быть больше нуля.");
-        }
-
-        if (string.IsNullOrWhiteSpace(request.PayoutDetails))
-        {
-            throw new ConflictException("Укажите реквизиты для вывода средств.");
-        }
-
+        // Amount > 0 and PayoutDetails-not-empty are enforced by
+        // RequestWithdrawalCommandValidator before this handler ever runs.
         var wallet = await walletRepository.GetOrCreateAsync(request.UserId, cancellationToken);
         if (wallet.Balance < request.Amount)
         {

@@ -12,11 +12,7 @@ public class ResetPasswordCommandHandler(IPasswordResetTokenRepository resetToke
 {
     public async Task Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
     {
-        if (!PasswordPolicy.IsValid(request.NewPassword))
-        {
-            throw new ConflictException("Пароль должен быть не короче 8 символов и содержать заглавную букву и цифру.");
-        }
-
+        // New-password complexity enforced by ResetPasswordCommandValidator.
         var tokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(request.Token)));
         var resetToken = await resetTokenRepository.GetValidByHashAsync(tokenHash, cancellationToken)
                           ?? throw new AuthenticationException("Ссылка для сброса пароля недействительна или устарела.");

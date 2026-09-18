@@ -47,17 +47,8 @@ public class OpenDisputeCommandHandlerTests
             handler.Handle(new OpenDisputeCommand(order.Id, order.BuyerId, "Ещё одна причина"), CancellationToken.None));
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("   ")]
-    public async Task Handle_BlankReason_ThrowsConflict(string reason)
-    {
-        var order = TestBuilders.Order(statusId: 4, statusName: "work");
-        var (handler, _) = CreateHandler(order);
-
-        await Assert.ThrowsAsync<ConflictException>(() =>
-            handler.Handle(new OpenDisputeCommand(order.Id, order.BuyerId, reason), CancellationToken.None));
-    }
+    // Blank-reason is now enforced by OpenDisputeCommandValidator via the MediatR pipeline (see
+    // OpenDisputeCommandValidatorTests), not by this handler directly.
 
     [Fact]
     public async Task Handle_ValidDisputeOnWorkOrder_SetsFlagsAndPersists()

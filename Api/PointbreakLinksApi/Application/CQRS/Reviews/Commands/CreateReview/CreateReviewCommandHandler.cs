@@ -20,11 +20,7 @@ public class CreateReviewCommandHandler(
 {
     public async Task<SiteReviewDto> Handle(CreateReviewCommand request, CancellationToken cancellationToken)
     {
-        if (request.Rating is < 1 or > 5)
-        {
-            throw new ConflictException("Оценка должна быть от 1 до 5.");
-        }
-
+        // Rating 1-5 enforced by CreateReviewCommandValidator.
         var order = await purchasedSiteRepository.GetByIdForBuyerAsync(request.PurchasedSiteId, request.BuyerId, cancellationToken)
                     ?? throw new NotFoundException("PurchasedSite", request.PurchasedSiteId);
 

@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,6 +20,33 @@ public class DomainExceptionHandler(ILogger<DomainExceptionHandler> logger) : IE
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
+        // FluentValidation.ValidationException (thrown by Application.Common.ValidationBehavior
+        // for bad input shape) gets its own branch — it carries multiple per-field failures,
+        // which a flat ProblemDetails.Detail can't represent. ValidationProblemDetails.Errors is
+        // there for exactly this; Detail is still populated with a joined summary so the
+        // frontend's existing extractErrorMessage() (which only reads `.detail`) keeps working
+        // without needing to special-case validation errors.
+        if (exception is ValidationException validationException)
+        {
+            logger.LogInformation(exception, "Handled validation failure: {Message}", exception.Message);
+
+            var errors = validationException.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
+
+            httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await httpContext.Response.WriteAsJsonAsync(
+                new ValidationProblemDetails(errors)
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "Validation Failed",
+                    Detail = string.Join(" ", validationException.Errors.Select(e => e.ErrorMessage)),
+                },
+                cancellationToken);
+
+            return true;
+        }
+
         var (statusCode, title) = exception.GetType().Name switch
         {
             "NotFoundException" => (StatusCodes.Status404NotFound, "Not Found"),

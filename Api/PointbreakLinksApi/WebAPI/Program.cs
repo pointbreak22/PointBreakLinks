@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using FluentValidation;
 using Identity.Infrastructure;
 using Identity.Infrastructure.Settings;
 using Infrastructure;
@@ -120,9 +121,14 @@ builder.Services.AddIdentityInfrastructure(builder.Configuration);
 // (Auth) — split into separate class libraries, each with its own DbContext/schema, see
 // PROJECT_MAP.md.
 builder.Services.AddMediatR(cfg =>
+{
     cfg.RegisterServicesFromAssemblies(
         typeof(Application.CQRS.Sites.Commands.CreateSite.CreateSiteCommandHandler).Assembly,
-        typeof(Identity.Application.CQRS.Auth.Commands.Login.LoginCommandHandler).Assembly));
+        typeof(Identity.Application.CQRS.Auth.Commands.Login.LoginCommandHandler).Assembly);
+    cfg.AddOpenBehavior(typeof(Application.Common.ValidationBehavior<,>));
+});
+builder.Services.AddValidatorsFromAssembly(typeof(Application.CQRS.Sites.Commands.CreateSite.CreateSiteCommandHandler).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(Identity.Application.CQRS.Auth.Commands.Login.LoginCommandHandler).Assembly);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer();

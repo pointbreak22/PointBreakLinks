@@ -20,11 +20,7 @@ public class ChangePasswordCommandHandler(
             throw new AuthenticationException("Текущий пароль указан неверно.");
         }
 
-        if (!PasswordPolicy.IsValid(request.NewPassword))
-        {
-            throw new ConflictException("Пароль должен быть не короче 8 символов и содержать заглавную букву и цифру.");
-        }
-
+        // New-password complexity enforced by ChangePasswordCommandValidator.
         user.PasswordHash = passwordHasher.Hash(request.NewPassword);
         await userRepository.SaveChangesAsync(cancellationToken);
 

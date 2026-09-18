@@ -20,11 +20,7 @@ public class ReplyToReviewCommandHandler(ISiteReviewRepository siteReviewReposit
             throw new ForbiddenException("Это не ваша площадка.");
         }
 
-        if (string.IsNullOrWhiteSpace(request.Reply))
-        {
-            throw new ConflictException("Ответ не может быть пустым.");
-        }
-
+        // Reply-not-empty enforced by ReplyToReviewCommandValidator.
         review.SellerReply = request.Reply;
         review.SellerRepliedAt = DateTime.UtcNow;
         await siteReviewRepository.SaveChangesAsync(cancellationToken);

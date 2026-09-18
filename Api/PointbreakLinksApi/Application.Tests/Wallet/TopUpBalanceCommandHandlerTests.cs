@@ -2,34 +2,16 @@ using Application.CQRS.Wallet.Commands.TopUpBalance;
 using Domain.Constants;
 using Domain.Entities;
 using Domain.Enums;
-using Domain.Exceptions;
 using Domain.Repositories;
 using Moq;
 
 namespace Application.Tests.WalletTests;
 
+// Amount > 0 / PaymentMethod-is-known are enforced by TopUpBalanceCommandValidator (see
+// TopUpBalanceCommandValidatorTests) via the MediatR pipeline, not by this handler directly —
+// so those cases are no longer meaningful to test against the handler in isolation.
 public class TopUpBalanceCommandHandlerTests
 {
-    [Theory]
-    [InlineData(0)]
-    [InlineData(-100)]
-    public async Task Handle_NonPositiveAmount_ThrowsConflict(decimal amount)
-    {
-        var handler = new TopUpBalanceCommandHandler(Mock.Of<IWalletRepository>(), Mock.Of<IBalanceTransactionRepository>());
-
-        await Assert.ThrowsAsync<ConflictException>(() =>
-            handler.Handle(new TopUpBalanceCommand(UserId: 1, amount, PaymentMethodNames.VisaMastercard), CancellationToken.None));
-    }
-
-    [Fact]
-    public async Task Handle_UnknownPaymentMethod_ThrowsConflict()
-    {
-        var handler = new TopUpBalanceCommandHandler(Mock.Of<IWalletRepository>(), Mock.Of<IBalanceTransactionRepository>());
-
-        await Assert.ThrowsAsync<ConflictException>(() =>
-            handler.Handle(new TopUpBalanceCommand(UserId: 1, 500m, "bitcoin"), CancellationToken.None));
-    }
-
     [Fact]
     public async Task Handle_ValidTopUp_IncreasesBalanceAndRecordsLedgerEntry()
     {

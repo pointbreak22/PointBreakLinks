@@ -1,6 +1,5 @@
 using Application.CQRS.Wallet.DTOs;
 using Domain.Entities;
-using Domain.Exceptions;
 using Domain.Repositories;
 using MediatR;
 
@@ -11,11 +10,7 @@ public class AddSavedPayoutMethodCommandHandler(ISavedPayoutMethodRepository rep
 {
     public async Task<SavedPayoutMethodDto> Handle(AddSavedPayoutMethodCommand request, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(request.Label) || string.IsNullOrWhiteSpace(request.Details))
-        {
-            throw new ConflictException("Название и реквизиты обязательны.");
-        }
-
+        // Label/Details-not-empty enforced by AddSavedPayoutMethodCommandValidator.
         var method = new SavedPayoutMethod
         {
             UserId = request.UserId,

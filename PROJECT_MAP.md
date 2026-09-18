@@ -491,6 +491,35 @@ Tailwind v4: `rounded-(--border-radius)`, `style="background: var(--gradient)"` 
   Базовые security-заголовки (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`)
   теперь на каждом ответе — без CSP, так как это чистый JSON API для отдельного Angular-origin,
   не сервер, рендерящий свой HTML, так что ограничивать inline-script/style нечего.
+- **Senior-level аудит бэкенда** (по явному запросу) нашёл и закрыл три реальных, а не
+  косметических, пробела:
+  - **`AsNoTracking()`** — ни один read-only запрос (каталог, дашборды, листинги) не был
+    помечен, EF Core снимал снапшот каждой строки для change-tracking без всякой нужды.
+    Добавлено во всех 24 репозиториях, но ТОЛЬКО там, где метод проверен по каждому вызывающему
+    коду и никогда не мутируется после чтения — иначе `SaveChangesAsync` на untracked-сущности
+    молча ничего бы не сохранил (тихая потеря данных, без исключения). Например,
+    `ISiteRepository.GetByIdAsync`/`GetByIdForOwnerAsync` (используются
+    Approve/Reject/Update/Deactivate/VerifySiteCommandHandler) остались tracked намеренно.
+  - **`AsSplitQuery()`** — `IPurchasedSiteRepository`'s `IncludeAll()` джойнил три независимые
+    one-to-many коллекции (`Site.Reviews`, `Links`, `Messages`) в одном запросе без
+    разделения — классический cartesian explosion (заказ с 3 сообщениями и 2 ссылками
+    возвращался как 6 дублированных строк для клиентской дедупликации).
+  - **Единый слой валидации** — раньше проверки входных данных были россыпью ручных
+    `if (...) throw new ConflictException(...)` по обработчикам, а `RegisterCommand` вообще не
+    проверялся (пустое имя/некорректный email/пароль в 1 символ ушли бы в БД и упали бы там
+    сырой ошибкой). Добавлен FluentValidation + `ValidationBehavior` (MediatR pipeline behavior,
+    один на оба MediatR-модуля — Application и Identity.Application), валидаторы для
+    Register/ChangePassword/ResetPassword/CreateReview/ReplyToReview/OpenDispute/
+    RequestWithdrawal/AddSavedPayoutMethod/TopUpBalance. Валидация — только формат/диапазон
+    (не требует БД); правила состояния (баланс, статус заказа, дубликаты) остались в
+    обработчиках, чтобы не размывать границу CQRS повторным походом в БД из валидатора.
+    `FluentValidation.ValidationException` ловится `DomainExceptionHandler` (по имени типа, как
+    и остальные) → 400 с `ValidationProblemDetails.Errors` по полям.
+  Проверено: полный набор тестов (68 Application.Tests + 6 WebAPI.IntegrationTests) и вручную
+  через реальный бэкенд — создание/правка площадки (проверка, что мутация с tracked-сущностью
+  реально сохраняется через переfetch отдельным запросом), листинг с `AsSplitQuery` (вложенные
+  ссылки/сообщения не потерялись), и HTTP 400 с понятной структурой на невалидный email/пароль/
+  сумму, при этом валидные запросы по-прежнему проходят.
 - Клиент собирается (`ng build`, dev и prod) и проходит юнит-тест (`ng test`).
 - Полный auth-цикл реализован сквозно: Domain → Application (MediatR) → Infrastructure (EF,
   JWT, bcrypt) → WebAPI (контроллер, cookie) → Angular (форма, guard, interceptor).

@@ -1,7 +1,6 @@
 using Domain.Constants;
 using Domain.Entities;
 using Domain.Enums;
-using Domain.Exceptions;
 using Domain.Repositories;
 using MediatR;
 
@@ -27,15 +26,9 @@ public class TopUpBalanceCommandHandler(IWalletRepository walletRepository, IBal
 
     public async Task<decimal> Handle(TopUpBalanceCommand request, CancellationToken cancellationToken)
     {
-        if (request.Amount <= 0)
-        {
-            throw new ConflictException("Сумма пополнения должна быть больше нуля.");
-        }
-
-        if (!MethodDescriptions.TryGetValue(request.PaymentMethod, out var description))
-        {
-            throw new ConflictException("Неизвестный способ оплаты.");
-        }
+        // Amount > 0 and PaymentMethod-is-known are enforced by TopUpBalanceCommandValidator
+        // (pure input-shape checks, no DB needed) before this handler ever runs.
+        var description = MethodDescriptions[request.PaymentMethod];
 
         var wallet = await walletRepository.GetOrCreateAsync(request.UserId, cancellationToken);
         wallet.Balance += request.Amount;

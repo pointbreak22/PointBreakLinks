@@ -33,11 +33,7 @@ public class OpenDisputeCommandHandler(
             throw new ConflictException("Спор по этому заказу уже открыт.");
         }
 
-        if (string.IsNullOrWhiteSpace(request.Reason))
-        {
-            throw new ConflictException("Укажите причину спора.");
-        }
-
+        // Reason-not-empty enforced by OpenDisputeCommandValidator.
         order.IsDisputed = true;
         order.DisputeReason = request.Reason;
         await purchasedSiteRepository.SaveChangesAsync(cancellationToken);
