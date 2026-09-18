@@ -10,7 +10,7 @@
     <div>
       <p class="text-sm" style="color: var(--text-muted)">Текущий баланс</p>
       <p class="text-3xl font-extrabold" style="color: var(--text-primary)">
-        {{ userStore.currentUser()?.balance | number: '1.2-2' }} ₽
+        {{ $safeNavigationMigration(userStore.currentUser()?.balance) | number: '1.2-2' }} ₽
       </p>
     </div>
 

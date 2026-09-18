@@ -87,7 +87,7 @@
         style="background: var(--bg-card); color: var(--text-primary)"
       >
         <i class="fas fa-wallet" style="color: var(--primary)"></i>
-        {{ userStore.currentUser()?.balance | number: '1.2-2' }} ₽
+        {{ $safeNavigationMigration(userStore.currentUser()?.balance) | number: '1.2-2' }} ₽
       </a>
       <div class="relative">
         <button
