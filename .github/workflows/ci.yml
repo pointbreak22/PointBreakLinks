@@ -29,8 +29,14 @@ jobs:
 
       # Application.Tests mocks every repository/service dependency (Moq) — no database or
       # other external service needed to run it, see PROJECT_MAP.md's "Что уже готово".
-      - name: Test
+      - name: Unit tests
         run: dotnet test Application.Tests/Application.Tests.csproj --no-build --configuration Release --logger "console;verbosity=normal"
+
+      # Boots the real app via WebApplicationFactory against a real Postgres in a Testcontainers
+      # container — ubuntu-latest ships Docker preinstalled, no extra setup needed. This is the
+      # suite that caught the Jwt:Secret eager-vs-lazy-read bug (see PROJECT_MAP.md).
+      - name: Integration tests
+        run: dotnet test WebAPI.IntegrationTests/WebAPI.IntegrationTests.csproj --no-build --configuration Release --logger "console;verbosity=normal"
 
   frontend:
     name: Frontend (build + test)

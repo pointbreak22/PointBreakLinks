@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
@@ -123,10 +124,23 @@ builder.Services.AddMediatR(cfg =>
         typeof(Application.CQRS.Sites.Commands.CreateSite.CreateSiteCommandHandler).Assembly,
         typeof(Identity.Application.CQRS.Auth.Commands.Login.LoginCommandHandler).Assembly));
 
-var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>() ?? new JwtSettings();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+    .AddJwtBearer();
+
+// Bound via IOptions<JwtSettings> (same mechanism Identity.Infrastructure's JwtTokenGenerator
+// uses to sign tokens — see services.Configure<JwtSettings> there) rather than an eager
+// `builder.Configuration.GetSection(...).Get<JwtSettings>()` snapshot taken at this line: that
+// eager read captures whatever "Jwt:Secret" resolves to AT THIS POINT in Program.cs, which is
+// NOT necessarily the final configuration — any config source added after this point (a test
+// host's ConfigureAppConfiguration override, a later builder.Configuration.Add*() call, etc.)
+// would silently be invisible to token VALIDATION while still applying to token SIGNING,
+// making every issued token fail signature validation. Caught by WebAPI.IntegrationTests
+// hosting the real app via WebApplicationFactory with an overridden Jwt:Secret — validation
+// used the original appsettings/user-secrets value while signing used the override.
+builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+    .Configure<IOptions<JwtSettings>>((options, jwtSettingsOptions) =>
     {
+        var jwtSettings = jwtSettingsOptions.Value;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -205,3 +219,8 @@ app.MapControllers();
 app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.Run();
+
+// Top-level statements make the compiler-generated Program class `internal` by default —
+// WebApplicationFactory<TEntryPoint> (used by WebAPI.IntegrationTests) needs a public one to
+// reference from another assembly.
+public partial class Program;

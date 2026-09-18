@@ -1,0 +1,46 @@
+# Covers the two services genuinely painful to set up by hand (Postgres, and the .NET runtime
+# itself if you don't already have it) — the Angular client stays outside this file and runs via
+# `npm start` as documented in README.md, since ng serve's HMR is far nicer for frontend
+# iteration than a container rebuild loop.
+#
+# EF Core migrations still run the same documented way from the host, just pointed at this
+# Postgres instead of a locally-installed one (nothing here auto-migrates on startup, matching
+# how the app already behaves outside Docker):
+#   dotnet ef database update --project Api/PointbreakLinksApi/Infrastructure --startup-project Api/PointbreakLinksApi/WebAPI --context ApplicationDbContext
+#   dotnet ef database update --project Api/PointbreakLinksApi/Identity.Infrastructure --startup-project Api/PointbreakLinksApi/WebAPI --context IdentityDbContext
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: pointbreak_links
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  webapi:
+    build:
+      context: ./Api/PointbreakLinksApi
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "5286:8080"
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=pointbreak_links;Username=postgres;Password=postgres"
+      # Dev-only placeholder — override with a real secret (env var or a real secrets manager)
+      # for anything beyond local use. Never commit an actual production secret here.
+      Jwt__Secret: "REPLACE_WITH_A_LONG_RANDOM_SECRET_FOR_LOCAL_DOCKER_USE_ONLY"
+      AllowedOrigins__0: "http://localhost:4200"
+
+volumes:
+  postgres-data:

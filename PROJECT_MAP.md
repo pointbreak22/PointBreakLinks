@@ -440,6 +440,34 @@ Tailwind v4: `rounded-(--border-radius)`, `style="background: var(--gradient)"` 
   единственная проверка роли), `GetMessagesQueryHandler` (открытие чата помечает прочитанными
   только чужие непрочитанные сообщения и не трогает БД, если нечего помечать), и
   `GetSellerProfileQueryHandler` (забаненный продавец — 404, а не пустой профиль).
+- **`WebAPI.IntegrationTests`** (xUnit + `WebApplicationFactory` + `Testcontainers.PostgreSql`,
+  `dotnet test WebAPI.IntegrationTests` из `Api/PointbreakLinksApi/`, нужен только Docker —
+  контейнер поднимается и мигрируется автоматически) — единственный слой, который реально
+  собирает ВЕСЬ стек (DI, оба DbContext против настоящего Postgres, JWT, middleware) и который
+  `Application.Tests`' моки принципиально не могут проверить. Сразу же нашёл два реальных бага:
+  - **`SiteReverificationJob` (BackgroundService) валит весь хост, если стартует раньше
+    миграций** — на пустой БД его собственный запрос падает на "relation does not exist", а
+    `HostOptions.BackgroundServiceExceptionBehavior = StopHost` останавливает ВЕСЬ хост из-за
+    этого одного фонового сервиса. В проде это не проявляется (миграции всегда применены до
+    старта), но сам факт, что один непрофильный BackgroundService может убить хост целиком —
+    стоит иметь в виду. Тестовая фабрика обходит это, применяя миграции через отдельные,
+    вручную созданные экземпляры DbContext ДО того, как реальный хост (и его фоновые сервисы)
+    вообще запускается.
+  - **`Jwt:Secret` читался в `Program.cs` двумя РАЗНЫМИ способами** — `AddJwtBearer`'s
+    `TokenValidationParameters` строился из `builder.Configuration.GetSection("Jwt").
+    Get<JwtSettings>()`, вызванного ЖЁСТКО и НЕМЕДЛЕННО в этой строке кода, а
+    `JwtTokenGenerator` (подписывающий токен) получает те же настройки через
+    `IOptions<JwtSettings>` — ленивое связывание, разрешаемое при первом обращении, УЖЕ после
+    того как финальная конфигурация собрана. В обычном запуске оба пути читают ОДИН И ТОТ ЖЕ
+    единственный источник конфигурации и совпадают случайно; но `WebApplicationFactory`
+    добавляет override поверх конфигурации ПОСЛЕ того как этот код в `Program.cs` уже
+    выполнился — из-за чего подпись токена уходила с одним секретом, а валидация — с другим
+    (взятым из `appsettings.json`/user-secrets), и `/api/me` стабильно падал 401 сразу после
+    успешного `/register`. Исправлено: `AddJwtBearer()` без опций + `services.
+    AddOptions<JwtBearerOptions>(...).Configure<IOptions<JwtSettings>>(...)` — теперь оба пути
+    читают `JwtSettings` одинаково, лениво, через один и тот же `IOptions<JwtSettings>`. Не
+    просто артефакт тестовой инфраструктуры: тот же разъезд смог бы произойти в проде, добавь
+    кто-нибудь конфигурацию (Key Vault, доп. `appsettings.*.json` и т.п.) уже ПОСЛЕ этой строки.
 - **GitHub Actions CI** (`.github/workflows/ci.yml`) — backend (`dotnet build`/`test` по
   `.slnx`) и frontend (`tsc --noEmit` → `ng lint` → `ng test` → `ng build --configuration
   production`) на каждый push/PR в `main`.

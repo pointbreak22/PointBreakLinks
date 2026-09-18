@@ -6,5 +6,6 @@
   <Project Path="Identity.Domain/Identity.Domain.csproj" />
   <Project Path="Identity.Application/Identity.Application.csproj" />
   <Project Path="Identity.Infrastructure/Identity.Infrastructure.csproj" />
+  <Project Path="WebAPI.IntegrationTests/WebAPI.IntegrationTests.csproj" />
   <Project Path="WebAPI/WebAPI.csproj" />
 </Solution>

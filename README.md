@@ -7,7 +7,7 @@
 принимает заказ в работу, размещает ссылку и подтверждает публикацию. Есть внутренний кошелёк,
 модерация новых площадок, чат по заказу, отзывы/рейтинг, аналитика и админ-панель.
 
-Портирован с référence-проекта на Vue/Laravel (FOXLinks) на Clean Architecture + CQRS/.NET и
+Портирован с референс-проекта на Vue/Laravel (FOXLinks) на Clean Architecture + CQRS/.NET и
 Angular, с рядом новых модулей, которых не было в оригинале (кошелёк, модерация, real-time
 уведомления, верификация владения площадкой и другие — см. `PROJECT_MAP.md`).
 
@@ -17,21 +17,27 @@ Angular, с рядом новых модулей, которых не было �
   MediatR (CQRS), EF Core + PostgreSQL, SignalR (real-time уведомления), JWT + refresh-токены,
   отдельный Identity-модуль (bounded context) в схеме `identity`.
 - **Frontend**: Angular 21 (standalone components, signals), Vitest для юнит-тестов.
-- **Тесты**: xUnit + Moq (`Application.Tests`) — command- и query-обработчики.
+- **Тесты**: xUnit + Moq (`Application.Tests`) — command- и query-обработчики; xUnit +
+  `WebApplicationFactory` + Testcontainers (`WebAPI.IntegrationTests`) — реальный HTTP-пайплайн
+  против настоящего Postgres в контейнере.
 
 ## Быстрый старт
 
 ### API (`Api/PointbreakLinksApi/`)
 
-1. Поднять PostgreSQL, указать строку подключения в `appsettings.json` (или user-secrets).
-2. Задать `Jwt:Secret`: `dotnet user-secrets set Jwt:Secret "..." --project WebAPI`.
+1. Поднять PostgreSQL — либо локально, либо `docker compose up -d postgres` (см.
+   `docker-compose.yml`; там же `webapi`-сервис для запуска и самого API в контейнере).
+2. Указать строку подключения в `appsettings.json` (или user-secrets) и задать `Jwt:Secret`:
+   `dotnet user-secrets set Jwt:Secret "..." --project WebAPI`.
 3. Применить обе независимые истории миграций (бизнес-контекст первым):
    ```bash
    dotnet ef database update --project Infrastructure --startup-project WebAPI --context ApplicationDbContext
    dotnet ef database update --project Identity.Infrastructure --startup-project WebAPI --context IdentityDbContext
    ```
 4. `dotnet run --project WebAPI` → Scalar-документация на `/scalar/v1` (по умолчанию `https://localhost:7001`).
-5. Тесты (БД не нужна — все зависимости замоканы): `dotnet test Application.Tests`.
+5. Юнит-тесты (БД не нужна — все зависимости замоканы): `dotnet test Application.Tests`.
+6. Интеграционные тесты (нужен только Docker — Postgres поднимается и мигрируется
+   автоматически): `dotnet test WebAPI.IntegrationTests`.
 
 ### Client (`Client/pointbreak-links-client/`)
 
