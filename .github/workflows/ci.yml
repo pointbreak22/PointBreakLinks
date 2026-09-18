@@ -14,7 +14,7 @@ jobs:
       run:
         working-directory: Api/PointbreakLinksApi
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -45,7 +45,7 @@ jobs:
       run:
         working-directory: Client/pointbreak-links-client
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node
         uses: actions/setup-node@v4
