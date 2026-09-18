@@ -9,7 +9,7 @@ public class EfProjectRepository(ApplicationDbContext db) : IProjectRepository
 {
     public async Task<(IReadOnlyList<Project> Items, int Total)> GetByUserAsync(int userId, int page, int perPage, CancellationToken cancellationToken = default)
     {
-        var query = db.Projects.Where(p => p.UserId == userId).OrderByDescending(p => p.CreatedAt);
+        var query = db.Projects.AsNoTracking().Where(p => p.UserId == userId).OrderByDescending(p => p.CreatedAt);
 
         var total = await query.CountAsync(cancellationToken);
         var items = await query.Skip((page - 1) * perPage).Take(perPage).ToListAsync(cancellationToken);

@@ -27,6 +27,7 @@ public class EfFavoriteSiteRepository(ApplicationDbContext db) : IFavoriteSiteRe
         // Include on FavoriteSite, not a post-Select() Site query — EF Core can't apply
         // Include() after a projection.
         var query = db.FavoriteSites
+            .AsNoTracking()
             .Where(f => f.BuyerId == buyerId)
             .Include(f => f.Site).ThenInclude(s => s.Topic)
             .Include(f => f.Site).ThenInclude(s => s.Status)

@@ -19,6 +19,7 @@ public class EfSiteReviewRepository(ApplicationDbContext db) : ISiteReviewReposi
     public async Task<(IReadOnlyList<SiteReview> Items, int Total)> GetBySiteAsync(int siteId, int page, int perPage, CancellationToken cancellationToken = default)
     {
         var query = db.SiteReviews
+            .AsNoTracking()
             .Include(r => r.Buyer)
             .Where(r => r.SiteId == siteId)
             .OrderByDescending(r => r.CreatedAt);

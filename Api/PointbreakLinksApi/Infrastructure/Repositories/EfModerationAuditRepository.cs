@@ -14,6 +14,7 @@ public class EfModerationAuditRepository(ApplicationDbContext db) : IModerationA
         int page, int perPage, CancellationToken cancellationToken = default)
     {
         var query = db.ModerationAuditEntries
+            .AsNoTracking()
             .Include(e => e.Site)
             .Include(e => e.Moderator)
             .OrderByDescending(e => e.CreatedAt);

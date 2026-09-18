@@ -16,7 +16,7 @@ public class EfWithdrawalRequestRepository(ApplicationDbContext db) : IWithdrawa
 
     public async Task<(IReadOnlyList<WithdrawalRequest> Items, int Total)> GetByUserAsync(int userId, int page, int perPage, CancellationToken cancellationToken = default)
     {
-        var query = db.WithdrawalRequests.Where(w => w.UserId == userId).OrderByDescending(w => w.CreatedAt);
+        var query = db.WithdrawalRequests.AsNoTracking().Where(w => w.UserId == userId).OrderByDescending(w => w.CreatedAt);
         var total = await query.CountAsync(cancellationToken);
         var items = await query.Skip((page - 1) * perPage).Take(perPage).ToListAsync(cancellationToken);
         return (items, total);
@@ -24,7 +24,7 @@ public class EfWithdrawalRequestRepository(ApplicationDbContext db) : IWithdrawa
 
     public async Task<(IReadOnlyList<WithdrawalRequest> Items, int Total)> GetPendingAsync(int page, int perPage, CancellationToken cancellationToken = default)
     {
-        var query = db.WithdrawalRequests.Include(w => w.User)
+        var query = db.WithdrawalRequests.AsNoTracking().Include(w => w.User)
             .Where(w => w.Status == WithdrawalRequestStatus.Pending)
             .OrderBy(w => w.CreatedAt);
         var total = await query.CountAsync(cancellationToken);

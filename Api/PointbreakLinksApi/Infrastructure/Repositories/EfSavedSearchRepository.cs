@@ -12,6 +12,7 @@ public class EfSavedSearchRepository(ApplicationDbContext db) : ISavedSearchRepo
 
     public async Task<IReadOnlyList<SavedSearch>> GetByUserAsync(int userId, CancellationToken cancellationToken = default) =>
         await db.SavedSearches
+            .AsNoTracking()
             .Include(s => s.Topic)
             .Include(s => s.Country)
             .Where(s => s.UserId == userId)
@@ -32,6 +33,7 @@ public class EfSavedSearchRepository(ApplicationDbContext db) : ISavedSearchRepo
 
     public async Task<IReadOnlyList<SavedSearch>> GetMatchingAsync(Site site, CancellationToken cancellationToken = default) =>
         await db.SavedSearches
+            .AsNoTracking()
             .Where(s => s.UserId != site.SellerId)
             .Where(s => s.TopicId == null || s.TopicId == site.TopicId)
             .Where(s => s.CountryId == null || s.CountryId == site.CountryId)

@@ -15,7 +15,9 @@ public class EfPaymentSettingRepository(ApplicationDbContext db) : IPaymentSetti
         bool isExpertArticle,
         CancellationToken cancellationToken = default)
     {
-        var existing = await db.PaymentSettings.FirstOrDefaultAsync(
+        // Only ever read back for its Id (assigned to PurchasedSite.PaymentSettingId) — never
+        // mutated after the dedup lookup, so this can stay untracked.
+        var existing = await db.PaymentSettings.AsNoTracking().FirstOrDefaultAsync(
             p => p.InsuranceType == insuranceType
                  && p.CheckUniqueness == checkUniqueness
                  && p.IsUrgent == isUrgent

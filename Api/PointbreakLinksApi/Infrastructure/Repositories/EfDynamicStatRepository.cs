@@ -8,5 +8,5 @@ namespace Infrastructure.Repositories;
 public class EfDynamicStatRepository(ApplicationDbContext db) : IDynamicStatRepository
 {
     public Task<List<DynamicStat>> GetByPageKeyAsync(string pageKey, CancellationToken cancellationToken = default) =>
-        db.DynamicStats.Where(s => s.PageKey == pageKey).OrderBy(s => s.Position).ToListAsync(cancellationToken);
+        db.DynamicStats.AsNoTracking().Where(s => s.PageKey == pageKey).OrderBy(s => s.Position).ToListAsync(cancellationToken);
 }

@@ -12,6 +12,7 @@ public class EfPurchasedSiteEventRepository(ApplicationDbContext db) : IPurchase
 
     public async Task<IReadOnlyList<PurchasedSiteEvent>> GetByPurchasedSiteAsync(int purchasedSiteId, CancellationToken cancellationToken = default) =>
         await db.PurchasedSiteEvents
+            .AsNoTracking()
             .Where(e => e.PurchasedSiteId == purchasedSiteId)
             .OrderBy(e => e.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -21,7 +22,7 @@ public class EfPurchasedSiteEventRepository(ApplicationDbContext db) : IPurchase
 
     public async Task<(IReadOnlyList<SystemLogRow> Items, int Total)> GetAllForAdminAsync(int page, int perPage, CancellationToken cancellationToken = default)
     {
-        var query = db.PurchasedSiteEvents.OrderByDescending(e => e.CreatedAt);
+        var query = db.PurchasedSiteEvents.AsNoTracking().OrderByDescending(e => e.CreatedAt);
 
         var total = await query.CountAsync(cancellationToken);
         var items = await query

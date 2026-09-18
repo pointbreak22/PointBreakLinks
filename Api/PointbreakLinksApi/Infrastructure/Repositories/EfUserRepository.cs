@@ -7,13 +7,16 @@ namespace Infrastructure.Repositories;
 
 public class EfUserRepository(ApplicationDbContext db) : IUserRepository
 {
+    // NOT AsNoTracking: RegisterCommandHandler attaches the returned Role to a new User's
+    // Roles collection — an untracked reference here would make EF treat it as a new row to
+    // insert instead of an existing one to link, duplicating/corrupting the roles table.
     public Task<Role?> GetRoleByNameAsync(string name, CancellationToken cancellationToken = default) =>
         db.Roles.FirstOrDefaultAsync(r => r.Name == name, cancellationToken);
 
     public async Task<(IReadOnlyList<User> Items, int Total)> GetAllPaginatedAsync(
         int page, int perPage, string? search = null, string? role = null, CancellationToken cancellationToken = default)
     {
-        var query = db.Users.Include(u => u.Roles).Include(u => u.Projects).AsQueryable();
+        var query = db.Users.AsNoTracking().Include(u => u.Roles).Include(u => u.Projects).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -37,7 +40,7 @@ public class EfUserRepository(ApplicationDbContext db) : IUserRepository
         db.Users.Include(u => u.Roles).Include(u => u.Projects).FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 
     public Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
-        db.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+        db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 
     public Task SaveChangesAsync(CancellationToken cancellationToken = default) =>
         db.SaveChangesAsync(cancellationToken);

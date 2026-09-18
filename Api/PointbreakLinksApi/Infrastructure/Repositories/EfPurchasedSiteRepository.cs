@@ -7,8 +7,14 @@ namespace Infrastructure.Repositories;
 
 public class EfPurchasedSiteRepository(ApplicationDbContext db) : IPurchasedSiteRepository
 {
+    // Three independent one-to-many collections (Site.Reviews, Links, Messages) in one
+    // Include() chain — without AsSplitQuery(), EF Core joins all three into a single SQL
+    // query, and an order with e.g. 3 messages and 2 links comes back as 3x2=6 duplicated rows
+    // for EF to de-duplicate client-side (a classic "cartesian explosion"; EF's own runtime
+    // warning flags exactly this). AsSplitQuery() issues one query per collection instead.
     private IQueryable<PurchasedSite> IncludeAll() =>
         db.PurchasedSites
+            .AsSplitQuery()
             .Include(ps => ps.Site).ThenInclude(s => s.Topic)
             .Include(ps => ps.Site).ThenInclude(s => s.Status)
             .Include(ps => ps.Site).ThenInclude(s => s.Country)
@@ -23,6 +29,7 @@ public class EfPurchasedSiteRepository(ApplicationDbContext db) : IPurchasedSite
     public async Task<(IReadOnlyList<PurchasedSite> Items, int Total)> GetSalesByWebmasterAsync(int webmasterId, int page, int perPage, CancellationToken cancellationToken = default)
     {
         var query = IncludeAll()
+            .AsNoTracking()
             .Where(ps => ps.Site.SellerId == webmasterId)
             .OrderByDescending(ps => ps.CreatedAt);
 
@@ -31,15 +38,20 @@ public class EfPurchasedSiteRepository(ApplicationDbContext db) : IPurchasedSite
         return (items, total);
     }
 
+    // NOT AsNoTracking: used by AcceptOrder/DeclineOrder/CancelOrder/OpenDispute/etc. command
+    // handlers, which mutate the returned order and call SaveChangesAsync.
     public Task<PurchasedSite?> GetByIdForSellerAsync(int purchasedSiteId, int sellerId, CancellationToken cancellationToken = default) =>
         IncludeAll().FirstOrDefaultAsync(ps => ps.Id == purchasedSiteId && ps.Site.SellerId == sellerId, cancellationToken);
 
+    // NOT AsNoTracking: same reasoning as GetByIdForSellerAsync, buyer side (OpenDispute,
+    // reviews, cancel).
     public Task<PurchasedSite?> GetByIdForBuyerAsync(int purchasedSiteId, int buyerId, CancellationToken cancellationToken = default) =>
         IncludeAll().FirstOrDefaultAsync(ps => ps.Id == purchasedSiteId && ps.BuyerId == buyerId, cancellationToken);
 
     public async Task<(IReadOnlyList<PurchasedSite> Items, int Total)> GetByProjectAsync(int projectId, int page, int perPage, CancellationToken cancellationToken = default)
     {
         var query = IncludeAll()
+            .AsNoTracking()
             .Where(ps => ps.ProjectId == projectId)
             .OrderByDescending(ps => ps.UpdatedAt);
 
@@ -48,8 +60,11 @@ public class EfPurchasedSiteRepository(ApplicationDbContext db) : IPurchasedSite
         return (items, total);
     }
 
+    // AsNoTracking: every caller (RequestPublicationCommandHandler, ResolveDisputeCommandHandler)
+    // only re-fetches by id to build a response DTO after already saving via a different,
+    // tracked instance — never mutates this one.
     public Task<PurchasedSite?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
-        IncludeAll().FirstOrDefaultAsync(ps => ps.Id == id, cancellationToken);
+        IncludeAll().AsNoTracking().FirstOrDefaultAsync(ps => ps.Id == id, cancellationToken);
 
     public async Task<IReadOnlyList<OrderExportRow>> GetAllForExportAsync(CancellationToken cancellationToken = default) =>
         await db.PurchasedSites

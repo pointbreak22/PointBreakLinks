@@ -12,7 +12,7 @@ public class EfNotificationRepository(ApplicationDbContext db) : INotificationRe
 
     public async Task<(IReadOnlyList<Notification> Items, int Total)> GetByUserAsync(int userId, int page, int perPage, CancellationToken cancellationToken = default)
     {
-        var query = db.Notifications.Where(n => n.UserId == userId).OrderByDescending(n => n.CreatedAt);
+        var query = db.Notifications.AsNoTracking().Where(n => n.UserId == userId).OrderByDescending(n => n.CreatedAt);
         var total = await query.CountAsync(cancellationToken);
         var items = await query.Skip((page - 1) * perPage).Take(perPage).ToListAsync(cancellationToken);
         return (items, total);

@@ -9,6 +9,7 @@ public class EfSupportMessageRepository(ApplicationDbContext db) : ISupportMessa
 {
     public Task<List<SupportMessage>> GetByTicketAsync(int ticketId, CancellationToken cancellationToken = default) =>
         db.SupportMessages
+            .AsNoTracking()
             .Include(m => m.Sender)
             .Where(m => m.SupportTicketId == ticketId)
             .OrderBy(m => m.CreatedAt)

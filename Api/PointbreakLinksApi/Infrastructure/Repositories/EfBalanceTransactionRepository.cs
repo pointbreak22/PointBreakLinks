@@ -12,7 +12,7 @@ public class EfBalanceTransactionRepository(ApplicationDbContext db) : IBalanceT
 
     public async Task<(IReadOnlyList<BalanceTransaction> Items, int Total)> GetByUserAsync(int userId, int page, int perPage, CancellationToken cancellationToken = default)
     {
-        var query = db.BalanceTransactions.Where(t => t.UserId == userId).OrderByDescending(t => t.CreatedAt);
+        var query = db.BalanceTransactions.AsNoTracking().Where(t => t.UserId == userId).OrderByDescending(t => t.CreatedAt);
         var total = await query.CountAsync(cancellationToken);
         var items = await query.Skip((page - 1) * perPage).Take(perPage).ToListAsync(cancellationToken);
         return (items, total);

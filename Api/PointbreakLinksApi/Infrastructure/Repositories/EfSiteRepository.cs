@@ -14,6 +14,7 @@ public class EfSiteRepository(ApplicationDbContext db) : ISiteRepository
     public async Task<(IReadOnlyList<Site> Items, int Total)> GetByUserAsync(int userId, int page, int perPage, CancellationToken cancellationToken = default)
     {
         var query = IncludeAll()
+            .AsNoTracking()
             .Where(s => s.SellerId == userId)
             .OrderByDescending(s => s.CreatedAt);
 
@@ -24,13 +25,14 @@ public class EfSiteRepository(ApplicationDbContext db) : ISiteRepository
 
     public async Task<IReadOnlyList<Site>> GetActiveByUserAsync(int userId, CancellationToken cancellationToken = default) =>
         await IncludeAll()
+            .AsNoTracking()
             .Where(s => s.SellerId == userId && s.IsActive)
             .OrderByDescending(s => s.CreatedAt)
             .ToListAsync(cancellationToken);
 
     public async Task<(IReadOnlyList<Site> Items, int Total)> GetCatalogAsync(int page, int perPage, SiteCatalogFilter? filter = null, CancellationToken cancellationToken = default)
     {
-        var query = IncludeAll().Where(s => s.IsActive);
+        var query = IncludeAll().AsNoTracking().Where(s => s.IsActive);
 
         if (filter != null)
         {
@@ -60,15 +62,20 @@ public class EfSiteRepository(ApplicationDbContext db) : ISiteRepository
         return (items, total);
     }
 
+    // NOT AsNoTracking: called by Approve/Reject/UpdateSiteCommandHandler, which mutate the
+    // returned site and call SaveChangesAsync.
     public Task<Site?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
         IncludeAll().FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 
+    // NOT AsNoTracking: same reasoning — Deactivate/Reactivate/Update/VerifySiteCommandHandler
+    // all mutate the returned, ownership-checked site.
     public Task<Site?> GetByIdForOwnerAsync(int id, int ownerId, CancellationToken cancellationToken = default) =>
         IncludeAll().FirstOrDefaultAsync(s => s.Id == id && s.SellerId == ownerId, cancellationToken);
 
     public async Task<(IReadOnlyList<Site> Items, int Total)> GetPendingModerationAsync(int page, int perPage, CancellationToken cancellationToken = default)
     {
         var query = db.Sites
+            .AsNoTracking()
             .Include(s => s.Topic)
             .Include(s => s.Status)
             .Include(s => s.Country)

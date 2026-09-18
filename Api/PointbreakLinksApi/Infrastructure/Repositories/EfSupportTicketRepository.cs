@@ -8,7 +8,7 @@ namespace Infrastructure.Repositories;
 public class EfSupportTicketRepository(ApplicationDbContext db) : ISupportTicketRepository
 {
     public Task<SupportTicket?> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default) =>
-        db.SupportTickets.FirstOrDefaultAsync(t => t.UserId == userId, cancellationToken);
+        db.SupportTickets.AsNoTracking().FirstOrDefaultAsync(t => t.UserId == userId, cancellationToken);
 
     public async Task<SupportTicket> GetOrCreateForUserAsync(int userId, CancellationToken cancellationToken = default)
     {
@@ -25,7 +25,7 @@ public class EfSupportTicketRepository(ApplicationDbContext db) : ISupportTicket
     }
 
     public Task<SupportTicket?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
-        db.SupportTickets.Include(t => t.User).FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        db.SupportTickets.AsNoTracking().Include(t => t.User).FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
     public Task SaveChangesAsync(CancellationToken cancellationToken = default) =>
         db.SaveChangesAsync(cancellationToken);
