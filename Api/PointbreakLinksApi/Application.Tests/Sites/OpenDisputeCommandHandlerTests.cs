@@ -2,6 +2,7 @@ using Application.CQRS.Sites.Commands.OpenDispute;
 using Domain.Entities;
 using Domain.Exceptions;
 using Domain.Repositories;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace Application.Tests.Sites;
@@ -19,7 +20,7 @@ public class OpenDisputeCommandHandlerTests
             .ReturnsAsync(order);
 
         var eventRepo = new Mock<IPurchasedSiteEventRepository>();
-        var handler = new OpenDisputeCommandHandler(repo.Object, eventRepo.Object);
+        var handler = new OpenDisputeCommandHandler(repo.Object, eventRepo.Object, Mock.Of<ILogger<OpenDisputeCommandHandler>>());
         return (handler, repo);
     }
 

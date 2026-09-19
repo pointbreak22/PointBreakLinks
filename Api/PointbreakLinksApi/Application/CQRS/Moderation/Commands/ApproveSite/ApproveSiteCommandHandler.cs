@@ -3,6 +3,7 @@ using Domain.Entities;
 using Domain.Exceptions;
 using Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Application.CQRS.Moderation.Commands.ApproveSite;
 
@@ -12,7 +13,8 @@ public class ApproveSiteCommandHandler(
     IDynamicStatsRefresher statsRefresher,
     INotificationPusher notificationPusher,
     INotificationRepository notificationRepository,
-    IModerationAuditRepository moderationAuditRepository)
+    IModerationAuditRepository moderationAuditRepository,
+    ILogger<ApproveSiteCommandHandler> logger)
     : IRequestHandler<ApproveSiteCommand>
 {
     // Matches the fixed id StatusConfiguration.HasData seeds for "active" — see
@@ -30,6 +32,9 @@ public class ApproveSiteCommandHandler(
             new ModerationAuditEntry { SiteId = site.Id, ModeratorId = request.ModeratorId, Action = "approved" },
             cancellationToken);
         await siteRepository.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation("Site {SiteId} ({Url}) approved by moderator {ModeratorId}.", site.Id, site.Url, request.ModeratorId);
+
         await statsRefresher.RefreshSiteCountsAsync(site.SellerId, cancellationToken);
         await notificationPusher.NotifySiteModeratedAsync(site.SellerId, site.Url, approved: true, cancellationToken);
 

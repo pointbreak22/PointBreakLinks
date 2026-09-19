@@ -515,11 +515,22 @@ Tailwind v4: `rounded-(--border-radius)`, `style="background: var(--gradient)"` 
     обработчиках, чтобы не размывать границу CQRS повторным походом в БД из валидатора.
     `FluentValidation.ValidationException` ловится `DomainExceptionHandler` (по имени типа, как
     и остальные) → 400 с `ValidationProblemDetails.Errors` по полям.
+  - **Структурное логирование бизнес-событий** — `ILogger<T>` был всего в 3 файлах на 101
+    обработчик, ключевые события (заказы, споры, модерация, деньги) нигде не логировались,
+    кроме автоматического request-логирования ASP.NET Core. Добавлен `ILogger<THandler>` (тот
+    же `logger.LogInformation("... {Placeholder} ...", value)`-стиль, что уже был в
+    `LoginCommandHandler`) в 12 обработчиков: жизненный цикл заказа (Accept/Decline/Cancel/
+    OpenDispute/ResolveDispute), модерация (Approve/RejectSite), деньги (TopUpBalance/
+    RequestWithdrawal/Approve/RejectWithdrawal), привилегированные admin-действия (SetUserBanned/
+    SetUserRole — `LogWarning`, не `LogInformation`, так как это события безопасности;
+    UnlockUser). Не добавлялось поголовно во все 101 — тривиальные Get-запросы и
+    формат-only команды логировать было бы просто шумом.
   Проверено: полный набор тестов (68 Application.Tests + 6 WebAPI.IntegrationTests) и вручную
   через реальный бэкенд — создание/правка площадки (проверка, что мутация с tracked-сущностью
   реально сохраняется через переfetch отдельным запросом), листинг с `AsSplitQuery` (вложенные
-  ссылки/сообщения не потерялись), и HTTP 400 с понятной структурой на невалидный email/пароль/
-  сумму, при этом валидные запросы по-прежнему проходят.
+  ссылки/сообщения не потерялись), HTTP 400 с понятной структурой на невалидный email/пароль/
+  сумму при том что валидные запросы по-прежнему проходят, и реальное пополнение баланса через
+  API с проверкой, что новая лог-строка действительно появляется в выводе Serilog.
 - Клиент собирается (`ng build`, dev и prod) и проходит юнит-тест (`ng test`).
 - Полный auth-цикл реализован сквозно: Domain → Application (MediatR) → Infrastructure (EF,
   JWT, bcrypt) → WebAPI (контроллер, cookie) → Angular (форма, guard, interceptor).

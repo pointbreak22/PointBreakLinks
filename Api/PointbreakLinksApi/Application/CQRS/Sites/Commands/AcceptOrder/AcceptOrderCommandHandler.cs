@@ -5,6 +5,7 @@ using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Application.CQRS.Sites.Commands.AcceptOrder;
 
@@ -23,7 +24,8 @@ public class AcceptOrderCommandHandler(
     INotificationRepository notificationRepository,
     IUserRepository userRepository,
     IEmailSender emailSender,
-    INotificationPreferenceRepository notificationPreferenceRepository)
+    INotificationPreferenceRepository notificationPreferenceRepository,
+    ILogger<AcceptOrderCommandHandler> logger)
     : IRequestHandler<AcceptOrderCommand, PurchasedSiteDto>
 {
     // Matches the fixed ids StatusConfiguration.HasData seeds — see Domain/Constants/StatusNames.cs.
@@ -51,6 +53,10 @@ public class AcceptOrderCommandHandler(
             },
             cancellationToken);
         await transactionRepository.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation(
+            "Order {OrderId} accepted by seller {SellerId}; {Amount} credited to wallet for {SiteUrl}.",
+            order.Id, request.WebmasterId, order.FinalPrice, order.Site.Url);
 
         await statsRefresher.RefreshWebmasterActiveSalesAsync(request.WebmasterId, cancellationToken);
         await statsRefresher.RefreshProjectWorkStatsAsync(cancellationToken);

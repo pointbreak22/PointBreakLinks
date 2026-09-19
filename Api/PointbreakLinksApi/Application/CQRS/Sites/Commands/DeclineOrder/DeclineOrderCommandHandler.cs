@@ -5,6 +5,7 @@ using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Application.CQRS.Sites.Commands.DeclineOrder;
 
@@ -22,7 +23,8 @@ public class DeclineOrderCommandHandler(
     INotificationRepository notificationRepository,
     IPurchasedSiteEventRepository purchasedSiteEventRepository,
     IEmailSender emailSender,
-    INotificationPreferenceRepository notificationPreferenceRepository)
+    INotificationPreferenceRepository notificationPreferenceRepository,
+    ILogger<DeclineOrderCommandHandler> logger)
     : IRequestHandler<DeclineOrderCommand, PurchasedSiteDto>
 {
     private const int ApplicationStatusId = 1;
@@ -55,6 +57,10 @@ public class DeclineOrderCommandHandler(
             },
             cancellationToken);
         await transactionRepository.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation(
+            "Order {OrderId} declined by seller {SellerId}; {Amount} refunded for {SiteUrl}.",
+            order.Id, request.WebmasterId, order.FinalPrice, order.Site.Url);
 
         order.Site.SoldCount = Math.Max(0, order.Site.SoldCount - 1);
         await siteRepository.SaveChangesAsync(cancellationToken);

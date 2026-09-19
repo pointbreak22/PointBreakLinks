@@ -1,6 +1,7 @@
 using Application.CQRS.Moderation.Commands.RejectSite;
 using Domain.Entities;
 using Domain.Repositories;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace Application.Tests.Moderation;
@@ -21,7 +22,8 @@ public class RejectSiteCommandHandlerTests
             .Returns(Task.CompletedTask);
 
         var handler = new RejectSiteCommandHandler(
-            siteRepo.Object, Mock.Of<Application.Common.INotificationPusher>(), Mock.Of<INotificationRepository>(), auditRepo.Object);
+            siteRepo.Object, Mock.Of<Application.Common.INotificationPusher>(), Mock.Of<INotificationRepository>(), auditRepo.Object,
+            Mock.Of<ILogger<RejectSiteCommandHandler>>());
 
         await handler.Handle(new RejectSiteCommand(site.Id, ModeratorId: 5, Reason: "Некачественный контент"), CancellationToken.None);
 
@@ -46,7 +48,8 @@ public class RejectSiteCommandHandlerTests
             .Returns(Task.CompletedTask);
 
         var handler = new RejectSiteCommandHandler(
-            siteRepo.Object, Mock.Of<Application.Common.INotificationPusher>(), notificationRepo.Object, Mock.Of<IModerationAuditRepository>());
+            siteRepo.Object, Mock.Of<Application.Common.INotificationPusher>(), notificationRepo.Object, Mock.Of<IModerationAuditRepository>(),
+            Mock.Of<ILogger<RejectSiteCommandHandler>>());
 
         await handler.Handle(new RejectSiteCommand(site.Id, ModeratorId: 5, Reason: null), CancellationToken.None);
 

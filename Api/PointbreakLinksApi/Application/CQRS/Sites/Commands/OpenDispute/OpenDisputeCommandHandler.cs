@@ -3,6 +3,7 @@ using Domain.Entities;
 using Domain.Exceptions;
 using Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Application.CQRS.Sites.Commands.OpenDispute;
 
@@ -13,7 +14,8 @@ namespace Application.CQRS.Sites.Commands.OpenDispute;
 // (ResolveDisputeCommandHandler) to look at and decide.
 public class OpenDisputeCommandHandler(
     IPurchasedSiteRepository purchasedSiteRepository,
-    IPurchasedSiteEventRepository purchasedSiteEventRepository)
+    IPurchasedSiteEventRepository purchasedSiteEventRepository,
+    ILogger<OpenDisputeCommandHandler> logger)
     : IRequestHandler<OpenDisputeCommand, PurchasedSiteDto>
 {
     private const int WorkStatusId = 4;
@@ -37,6 +39,8 @@ public class OpenDisputeCommandHandler(
         order.IsDisputed = true;
         order.DisputeReason = request.Reason;
         await purchasedSiteRepository.SaveChangesAsync(cancellationToken);
+
+        logger.LogWarning("Dispute opened on order {OrderId} by buyer {BuyerId}. Reason: {Reason}", order.Id, request.BuyerId, request.Reason);
 
         await purchasedSiteEventRepository.AddAsync(
             new PurchasedSiteEvent { PurchasedSiteId = order.Id, Description = $"Покупатель открыл спор: {request.Reason}" },

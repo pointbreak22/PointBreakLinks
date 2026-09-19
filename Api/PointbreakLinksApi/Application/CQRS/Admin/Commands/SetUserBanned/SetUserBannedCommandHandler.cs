@@ -2,10 +2,12 @@ using Application.CQRS.Admin.DTOs;
 using Domain.Exceptions;
 using Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Application.CQRS.Admin.Commands.SetUserBanned;
 
-public class SetUserBannedCommandHandler(IUserRepository userRepository) : IRequestHandler<SetUserBannedCommand, AdminUserDto>
+public class SetUserBannedCommandHandler(IUserRepository userRepository, ILogger<SetUserBannedCommandHandler> logger)
+    : IRequestHandler<SetUserBannedCommand, AdminUserDto>
 {
     public async Task<AdminUserDto> Handle(SetUserBannedCommand request, CancellationToken cancellationToken)
     {
@@ -19,6 +21,10 @@ public class SetUserBannedCommandHandler(IUserRepository userRepository) : IRequ
 
         user.IsBanned = request.IsBanned;
         await userRepository.SaveChangesAsync(cancellationToken);
+
+        logger.LogWarning(
+            "User {TargetUserId} {Action} by admin {AdminUserId}.",
+            request.TargetUserId, request.IsBanned ? "banned" : "unbanned", request.AdminUserId);
 
         return AdminUserDto.FromEntity(user);
     }

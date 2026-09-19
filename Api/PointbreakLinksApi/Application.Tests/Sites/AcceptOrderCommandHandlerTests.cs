@@ -3,6 +3,7 @@ using Application.CQRS.Sites.Commands.AcceptOrder;
 using Domain.Entities;
 using Domain.Enums;
 using Domain.Repositories;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace Application.Tests.Sites;
@@ -36,7 +37,8 @@ public class AcceptOrderCommandHandlerTests
         var handler = new AcceptOrderCommandHandler(
             orderRepo.Object, walletRepo.Object, transactionRepo.Object, Mock.Of<IDynamicStatsRefresher>(),
             Mock.Of<INotificationPusher>(), Mock.Of<IPurchasedSiteEventRepository>(), Mock.Of<INotificationRepository>(),
-            Mock.Of<IUserRepository>(), Mock.Of<IEmailSender>(), Mock.Of<INotificationPreferenceRepository>());
+            Mock.Of<IUserRepository>(), Mock.Of<IEmailSender>(), Mock.Of<INotificationPreferenceRepository>(),
+            Mock.Of<ILogger<AcceptOrderCommandHandler>>());
 
         var result = await handler.Handle(new AcceptOrderCommand(order.Id, sellerId), CancellationToken.None);
 

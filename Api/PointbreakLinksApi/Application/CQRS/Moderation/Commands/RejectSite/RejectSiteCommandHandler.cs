@@ -3,6 +3,7 @@ using Domain.Entities;
 using Domain.Exceptions;
 using Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Application.CQRS.Moderation.Commands.RejectSite;
 
@@ -10,7 +11,8 @@ public class RejectSiteCommandHandler(
     ISiteRepository siteRepository,
     INotificationPusher notificationPusher,
     INotificationRepository notificationRepository,
-    IModerationAuditRepository moderationAuditRepository) : IRequestHandler<RejectSiteCommand>
+    IModerationAuditRepository moderationAuditRepository,
+    ILogger<RejectSiteCommandHandler> logger) : IRequestHandler<RejectSiteCommand>
 {
     // Matches the fixed id StatusConfiguration.HasData seeds for "rejected".
     private const int RejectedStatusId = 3;
@@ -26,6 +28,11 @@ public class RejectSiteCommandHandler(
             new ModerationAuditEntry { SiteId = site.Id, ModeratorId = request.ModeratorId, Action = "rejected", Reason = request.Reason },
             cancellationToken);
         await siteRepository.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation(
+            "Site {SiteId} ({Url}) rejected by moderator {ModeratorId}. Reason: {Reason}",
+            site.Id, site.Url, request.ModeratorId, request.Reason ?? "(not specified)");
+
         await notificationPusher.NotifySiteModeratedAsync(site.SellerId, site.Url, approved: false, cancellationToken);
 
         var message = string.IsNullOrWhiteSpace(request.Reason)

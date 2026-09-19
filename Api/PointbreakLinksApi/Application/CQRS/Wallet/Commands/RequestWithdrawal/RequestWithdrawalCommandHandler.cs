@@ -4,6 +4,7 @@ using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Application.CQRS.Wallet.Commands.RequestWithdrawal;
 
@@ -14,7 +15,8 @@ namespace Application.CQRS.Wallet.Commands.RequestWithdrawal;
 public class RequestWithdrawalCommandHandler(
     IWalletRepository walletRepository,
     IBalanceTransactionRepository transactionRepository,
-    IWithdrawalRequestRepository withdrawalRequestRepository)
+    IWithdrawalRequestRepository withdrawalRequestRepository,
+    ILogger<RequestWithdrawalCommandHandler> logger)
     : IRequestHandler<RequestWithdrawalCommand, WithdrawalRequestDto>
 {
     public async Task<WithdrawalRequestDto> Handle(RequestWithdrawalCommand request, CancellationToken cancellationToken)
@@ -50,6 +52,10 @@ public class RequestWithdrawalCommandHandler(
             },
             cancellationToken);
         await transactionRepository.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation(
+            "User {UserId} requested a withdrawal of {Amount}; wallet debited immediately, request pending.",
+            request.UserId, request.Amount);
 
         return WithdrawalRequestDto.FromEntity(withdrawalRequest);
     }

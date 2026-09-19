@@ -3,6 +3,7 @@ using Application.CQRS.Moderation.Commands.ApproveSite;
 using Domain.Entities;
 using Domain.Exceptions;
 using Domain.Repositories;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace Application.Tests.Moderation;
@@ -16,7 +17,8 @@ public class ApproveSiteCommandHandlerTests
         siteRepo.Setup(r => r.GetByIdAsync(99, It.IsAny<CancellationToken>())).ReturnsAsync((Site?)null);
         var handler = new ApproveSiteCommandHandler(
             siteRepo.Object, Mock.Of<ISavedSearchRepository>(), Mock.Of<IDynamicStatsRefresher>(),
-            Mock.Of<INotificationPusher>(), Mock.Of<INotificationRepository>(), Mock.Of<IModerationAuditRepository>());
+            Mock.Of<INotificationPusher>(), Mock.Of<INotificationRepository>(), Mock.Of<IModerationAuditRepository>(),
+            Mock.Of<ILogger<ApproveSiteCommandHandler>>());
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new ApproveSiteCommand(99, ModeratorId: 5), CancellationToken.None));
     }
@@ -40,7 +42,8 @@ public class ApproveSiteCommandHandlerTests
 
         var handler = new ApproveSiteCommandHandler(
             siteRepo.Object, savedSearchRepo.Object, Mock.Of<IDynamicStatsRefresher>(),
-            Mock.Of<INotificationPusher>(), Mock.Of<INotificationRepository>(), auditRepo.Object);
+            Mock.Of<INotificationPusher>(), Mock.Of<INotificationRepository>(), auditRepo.Object,
+            Mock.Of<ILogger<ApproveSiteCommandHandler>>());
 
         await handler.Handle(new ApproveSiteCommand(site.Id, ModeratorId: 5), CancellationToken.None);
 
@@ -77,7 +80,8 @@ public class ApproveSiteCommandHandlerTests
 
         var handler = new ApproveSiteCommandHandler(
             siteRepo.Object, savedSearchRepo.Object, Mock.Of<IDynamicStatsRefresher>(),
-            Mock.Of<INotificationPusher>(), notificationRepo.Object, Mock.Of<IModerationAuditRepository>());
+            Mock.Of<INotificationPusher>(), notificationRepo.Object, Mock.Of<IModerationAuditRepository>(),
+            Mock.Of<ILogger<ApproveSiteCommandHandler>>());
 
         await handler.Handle(new ApproveSiteCommand(site.Id, ModeratorId: 5), CancellationToken.None);
 

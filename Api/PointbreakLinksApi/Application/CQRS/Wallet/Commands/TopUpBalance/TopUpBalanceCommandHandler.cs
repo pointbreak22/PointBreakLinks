@@ -3,6 +3,7 @@ using Domain.Entities;
 using Domain.Enums;
 using Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Application.CQRS.Wallet.Commands.TopUpBalance;
 
@@ -15,7 +16,10 @@ namespace Application.CQRS.Wallet.Commands.TopUpBalance;
 // collection step itself is missing. Swap this handler's instant credit for a real provider
 // webhook/return handler later; nothing else in the wallet needs to change. PaymentMethod is
 // recorded for real even though nothing processes it yet — see PaymentMethodNames.cs.
-public class TopUpBalanceCommandHandler(IWalletRepository walletRepository, IBalanceTransactionRepository transactionRepository)
+public class TopUpBalanceCommandHandler(
+    IWalletRepository walletRepository,
+    IBalanceTransactionRepository transactionRepository,
+    ILogger<TopUpBalanceCommandHandler> logger)
     : IRequestHandler<TopUpBalanceCommand, decimal>
 {
     private static readonly Dictionary<string, string> MethodDescriptions = new()
@@ -45,6 +49,10 @@ public class TopUpBalanceCommandHandler(IWalletRepository walletRepository, IBal
             },
             cancellationToken);
         await transactionRepository.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation(
+            "User {UserId} topped up {Amount} via {PaymentMethod}; new balance {Balance}.",
+            request.UserId, request.Amount, request.PaymentMethod, wallet.Balance);
 
         return wallet.Balance;
     }

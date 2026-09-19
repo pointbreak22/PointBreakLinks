@@ -5,6 +5,7 @@ using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Application.CQRS.Sites.Commands.ResolveDispute;
 
@@ -22,7 +23,8 @@ public class ResolveDisputeCommandHandler(
     IPurchasedSiteEventRepository purchasedSiteEventRepository,
     IUserRepository userRepository,
     IEmailSender emailSender,
-    INotificationPreferenceRepository notificationPreferenceRepository)
+    INotificationPreferenceRepository notificationPreferenceRepository,
+    ILogger<ResolveDisputeCommandHandler> logger)
     : IRequestHandler<ResolveDisputeCommand, PurchasedSiteDto>
 {
     private const int CancelledStatusId = 7;
@@ -75,6 +77,10 @@ public class ResolveDisputeCommandHandler(
                 cancellationToken);
             await transactionRepository.SaveChangesAsync(cancellationToken);
 
+            logger.LogInformation(
+                "Dispute on order {OrderId} resolved in buyer's favor; {Amount} charged back from seller {SellerId} and refunded to buyer {BuyerId}.",
+                order.Id, order.FinalPrice, order.Site.SellerId, order.BuyerId);
+
             await purchasedSiteEventRepository.AddAsync(
                 new PurchasedSiteEvent { PurchasedSiteId = order.Id, Description = "Спор решён администратором в пользу покупателя — средства возвращены" },
                 cancellationToken);
@@ -118,6 +124,8 @@ public class ResolveDisputeCommandHandler(
         else
         {
             await purchasedSiteRepository.SaveChangesAsync(cancellationToken);
+
+            logger.LogInformation("Dispute on order {OrderId} resolved in seller's favor, no funds moved.", order.Id);
 
             await purchasedSiteEventRepository.AddAsync(
                 new PurchasedSiteEvent { PurchasedSiteId = order.Id, Description = "Спор решён администратором в пользу продавца" },

@@ -3,6 +3,7 @@ using Domain.Constants;
 using Domain.Entities;
 using Domain.Enums;
 using Domain.Repositories;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace Application.Tests.WalletTests;
@@ -25,7 +26,7 @@ public class TopUpBalanceCommandHandlerTests
             .Callback<BalanceTransaction, CancellationToken>((t, _) => captured = t)
             .Returns(Task.CompletedTask);
 
-        var handler = new TopUpBalanceCommandHandler(walletRepo.Object, transactionRepo.Object);
+        var handler = new TopUpBalanceCommandHandler(walletRepo.Object, transactionRepo.Object, Mock.Of<ILogger<TopUpBalanceCommandHandler>>());
 
         var newBalance = await handler.Handle(new TopUpBalanceCommand(UserId: 1, 300m, PaymentMethodNames.Mir), CancellationToken.None);
 

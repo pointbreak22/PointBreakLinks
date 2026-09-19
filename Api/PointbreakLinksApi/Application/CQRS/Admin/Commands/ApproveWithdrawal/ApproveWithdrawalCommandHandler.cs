@@ -4,13 +4,15 @@ using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Application.CQRS.Admin.Commands.ApproveWithdrawal;
 
 public class ApproveWithdrawalCommandHandler(
     IWithdrawalRequestRepository withdrawalRequestRepository,
     INotificationRepository notificationRepository,
-    IEmailSender emailSender)
+    IEmailSender emailSender,
+    ILogger<ApproveWithdrawalCommandHandler> logger)
     : IRequestHandler<ApproveWithdrawalCommand>
 {
     public async Task Handle(ApproveWithdrawalCommand request, CancellationToken cancellationToken)
@@ -26,6 +28,8 @@ public class ApproveWithdrawalCommandHandler(
         withdrawal.Status = WithdrawalRequestStatus.Approved;
         withdrawal.ProcessedAt = DateTime.UtcNow;
         await withdrawalRequestRepository.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation("Withdrawal request {RequestId} for {Amount} approved (user {UserId}).", withdrawal.Id, withdrawal.Amount, withdrawal.UserId);
 
         await notificationRepository.AddAsync(
             new Notification { UserId = withdrawal.UserId, Message = $"Заявка на вывод {withdrawal.Amount} ₽ одобрена, средства отправлены" },

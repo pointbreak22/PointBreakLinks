@@ -4,6 +4,7 @@ using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Application.CQRS.Admin.Commands.RejectWithdrawal;
 
@@ -14,7 +15,8 @@ public class RejectWithdrawalCommandHandler(
     IWalletRepository walletRepository,
     IBalanceTransactionRepository transactionRepository,
     INotificationRepository notificationRepository,
-    IEmailSender emailSender)
+    IEmailSender emailSender,
+    ILogger<RejectWithdrawalCommandHandler> logger)
     : IRequestHandler<RejectWithdrawalCommand>
 {
     public async Task Handle(RejectWithdrawalCommand request, CancellationToken cancellationToken)
@@ -45,6 +47,10 @@ public class RejectWithdrawalCommandHandler(
             },
             cancellationToken);
         await transactionRepository.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation(
+            "Withdrawal request {RequestId} for {Amount} rejected (user {UserId}), funds refunded to wallet. Comment: {Comment}",
+            withdrawal.Id, withdrawal.Amount, withdrawal.UserId, request.Comment ?? "(none)");
 
         await notificationRepository.AddAsync(
             new Notification { UserId = withdrawal.UserId, Message = $"Заявка на вывод {withdrawal.Amount} ₽ отклонена, средства возвращены на баланс" },
